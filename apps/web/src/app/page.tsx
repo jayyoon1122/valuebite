@@ -110,18 +110,21 @@ export default function HomePage() {
       {!hasData ? (
         renderEmptyState()
       ) : isMapView ? (
-        <div className="relative" style={{ height: 'calc(100vh - 180px)' }}>
+        <div className="relative" style={{ height: 'calc(100vh - 120px)' }}>
           <MapView
             restaurants={filtered}
             center={[userLat, userLng]}
             countryCode={countryCode}
             onMarkerClick={(id) => router.push(`/restaurant/${id}`)}
           />
-          <div className="absolute bottom-0 left-0 right-0 bg-[var(--vb-bg)] rounded-t-2xl shadow-lg max-h-[85vh] overflow-y-auto">
-            <div className="flex justify-center py-2">
-              <div className="w-10 h-1 rounded-full bg-gray-300" />
+          {/* Bottom sheet — starts at 30%, scrollable to see more */}
+          <div className="absolute bottom-0 left-0 right-0 bg-[var(--vb-bg)] rounded-t-2xl shadow-lg" style={{ maxHeight: '35vh' }}>
+            <div className="overflow-y-auto" style={{ maxHeight: '35vh' }}>
+              <div className="sticky top-0 bg-[var(--vb-bg)] flex justify-center py-2 z-10 rounded-t-2xl">
+                <div className="w-10 h-1 rounded-full bg-gray-300" />
+              </div>
+              <div className="px-4 pb-20 space-y-3">{renderFeed()}</div>
             </div>
-            <div className="px-4 pb-4 space-y-3">{renderFeed()}</div>
           </div>
         </div>
       ) : (
