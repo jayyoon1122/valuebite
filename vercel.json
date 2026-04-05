@@ -1,6 +1,6 @@
 {
   "buildCommand": "cd apps/web && npx next build",
-  "installCommand": "rm -rf apps/mobile apps/api apps/worker && npm install --legacy-peer-deps && cd apps/web && npm install react@19 react-dom@19 --legacy-peer-deps",
+  "installCommand": "rm -rf apps/mobile apps/api apps/worker && npm install --legacy-peer-deps && cd apps/web && npm install react@19 react-dom@19 @types/node --legacy-peer-deps",
   "framework": "nextjs",
   "outputDirectory": "apps/web/.next"
 }
