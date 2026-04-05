@@ -21,11 +21,11 @@ const lazyLocales: Record<string, () => Promise<any>> = {
   hi: () => import('./locales/hi.json'),
 };
 
-// Eagerly loaded core locales
-const eagerLocales: Record<string, typeof en> = { en, ja, ko, de, fr, es };
+// Eagerly loaded core locales (use 'any' to allow partial translations)
+const eagerLocales: Record<string, any> = { en, ja, ko, de, fr, es };
 
 // Cache for lazy-loaded locales
-const localeCache: Record<string, typeof en> = { ...eagerLocales };
+const localeCache: Record<string, any> = { ...eagerLocales };
 
 export const supportedLocales = [
   'en', 'ja', 'ko', 'de', 'fr', 'es',
@@ -38,7 +38,7 @@ export const defaultLocale: Locale = 'en';
 
 export type TranslationKeys = typeof en;
 
-export function getTranslations(locale: Locale): TranslationKeys {
+export function getTranslations(locale: Locale): any {
   return localeCache[locale] || localeCache[defaultLocale];
 }
 
