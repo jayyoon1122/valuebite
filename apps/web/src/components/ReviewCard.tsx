@@ -1,6 +1,35 @@
 'use client';
 
+import { useState } from 'react';
 import { Star, ThumbsUp, ThumbsDown, Heart, Sparkles } from 'lucide-react';
+
+function HelpfulButton({ count }: { count: number }) {
+  const [liked, setLiked] = useState(false);
+  const [localCount, setLocalCount] = useState(count);
+
+  const toggle = () => {
+    if (liked) {
+      setLocalCount(c => c - 1);
+    } else {
+      setLocalCount(c => c + 1);
+    }
+    setLiked(!liked);
+  };
+
+  return (
+    <div className="flex items-center gap-4 mt-3 pt-2 border-t border-[var(--vb-border)]">
+      <button
+        onClick={toggle}
+        className={`flex items-center gap-1 text-xs transition ${
+          liked ? 'text-red-500 font-semibold' : 'text-[var(--vb-text-secondary)] hover:text-red-400'
+        }`}
+      >
+        <Heart size={14} className={liked ? 'fill-current' : ''} />
+        Helpful ({localCount})
+      </button>
+    </div>
+  );
+}
 
 interface ReviewData {
   id: string;
@@ -126,11 +155,7 @@ export function ReviewCard({ review }: Props) {
       )}
 
       {/* Actions */}
-      <div className="flex items-center gap-4 mt-3 pt-2 border-t border-[var(--vb-border)]">
-        <button className="flex items-center gap-1 text-xs text-[var(--vb-text-secondary)] hover:text-[var(--vb-primary)]">
-          <Heart size={14} /> Helpful ({review.helpfulCount})
-        </button>
-      </div>
+      <HelpfulButton count={review.helpfulCount} />
     </div>
   );
 }

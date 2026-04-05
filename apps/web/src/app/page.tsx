@@ -117,7 +117,7 @@ export default function HomePage() {
             countryCode={countryCode}
             onMarkerClick={(id) => router.push(`/restaurant/${id}`)}
           />
-          <div className="absolute bottom-0 left-0 right-0 bg-[var(--vb-bg)] rounded-t-2xl shadow-lg max-h-[40vh] overflow-y-auto">
+          <div className="absolute bottom-0 left-0 right-0 bg-[var(--vb-bg)] rounded-t-2xl shadow-lg max-h-[85vh] overflow-y-auto">
             <div className="flex justify-center py-2">
               <div className="w-10 h-1 rounded-full bg-gray-300" />
             </div>

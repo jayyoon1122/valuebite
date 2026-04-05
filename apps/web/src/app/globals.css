@@ -2,37 +2,50 @@
 
 /* Light mode (default) */
 :root {
+  --vb-primary: #16a34a;
+  --vb-primary-dark: #15803d;
+  --vb-accent: #d97706;
+  --vb-bg: #ffffff;
+  --vb-bg-secondary: #f3f4f6;
+  --vb-text: #111827;
+  --vb-text-secondary: #4b5563;
+  --vb-border: #d1d5db;
+  --vb-danger: #dc2626;
+  --vb-value-great: #15803d;
+  --vb-value-good: #a16207;
+  --vb-value-over: #ea580c;
+}
+
+/* Dark mode */
+html.dark {
   --vb-primary: #22c55e;
   --vb-primary-dark: #16a34a;
   --vb-accent: #f59e0b;
-  --vb-bg: #ffffff;
-  --vb-bg-secondary: #f9fafb;
-  --vb-text: #111827;
-  --vb-text-secondary: #6b7280;
-  --vb-border: #e5e7eb;
+  --vb-bg: #111827;
+  --vb-bg-secondary: #1f2937;
+  --vb-text: #f9fafb;
+  --vb-text-secondary: #9ca3af;
+  --vb-border: #374151;
   --vb-danger: #ef4444;
   --vb-value-great: #22c55e;
   --vb-value-good: #eab308;
   --vb-value-over: #f97316;
 }
 
-/* Dark mode - activated by class on <html> */
-html.dark {
-  --vb-bg: #111827;
-  --vb-bg-secondary: #1f2937;
-  --vb-text: #f9fafb;
-  --vb-text-secondary: #9ca3af;
-  --vb-border: #374151;
-}
-
-/* Also respect OS preference if no explicit class set */
 @media (prefers-color-scheme: dark) {
   html:not(.light) {
+    --vb-primary: #22c55e;
+    --vb-primary-dark: #16a34a;
+    --vb-accent: #f59e0b;
     --vb-bg: #111827;
     --vb-bg-secondary: #1f2937;
     --vb-text: #f9fafb;
     --vb-text-secondary: #9ca3af;
     --vb-border: #374151;
+    --vb-danger: #ef4444;
+    --vb-value-great: #22c55e;
+    --vb-value-good: #eab308;
+    --vb-value-over: #f97316;
   }
 }
 
@@ -42,7 +55,6 @@ body {
   color: var(--vb-text);
 }
 
-/* Leaflet fix */
 .leaflet-container {
   width: 100%;
   height: 100%;
