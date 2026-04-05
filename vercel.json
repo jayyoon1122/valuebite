@@ -1,6 +1,6 @@
 {
   "buildCommand": "cd apps/web && npx next build",
-  "installCommand": "npm install --legacy-peer-deps --workspace=apps/web --workspace=packages/types --workspace=packages/utils --workspace=packages/i18n --workspace=packages/db --workspace=packages/config --include-workspace-root",
+  "installCommand": "npm install --force",
   "framework": "nextjs",
   "outputDirectory": "apps/web/.next"
 }
