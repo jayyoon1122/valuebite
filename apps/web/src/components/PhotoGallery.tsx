@@ -1,127 +1,73 @@
 'use client';
 
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Camera } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { ChevronLeft, ChevronRight, Camera, ImageOff } from 'lucide-react';
 import { FullScreenPhoto } from './FullScreenPhoto';
 
-interface CategorizedPhoto {
+interface Photo {
   url: string;
   label: string;
   color: string;
 }
 
-const CUISINE_PHOTO_SETS: Record<string, CategorizedPhoto[]> = {
-  pizza: [
-    { url: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&h=400&fit=crop', label: 'Signature Dish', color: 'bg-green-500' },
-    { url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=400&fit=crop', label: 'Interior', color: 'bg-purple-500' },
-    { url: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600&h=400&fit=crop', label: 'Menu Item', color: 'bg-green-500' },
-  ],
-  ramen: [
-    { url: 'https://images.unsplash.com/photo-1557872943-16a5ac26437e?w=600&h=400&fit=crop', label: 'Signature Ramen', color: 'bg-green-500' },
-    { url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=400&fit=crop', label: 'Counter Seating', color: 'bg-purple-500' },
-    { url: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&h=400&fit=crop', label: 'Set Meal', color: 'bg-green-500' },
-  ],
-  gyudon: [
-    { url: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&h=400&fit=crop', label: 'Beef Bowl', color: 'bg-green-500' },
-    { url: 'https://images.unsplash.com/photo-1540648639573-8c848de23f0a?w=600&h=400&fit=crop', label: 'Set Meal', color: 'bg-green-500' },
-    { url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=400&fit=crop', label: 'Interior', color: 'bg-purple-500' },
-  ],
-  chinese: [
-    { url: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=600&h=400&fit=crop', label: 'Signature Dish', color: 'bg-green-500' },
-    { url: 'https://images.unsplash.com/photo-1525755662778-989d0524087e?w=600&h=400&fit=crop', label: 'Dumplings', color: 'bg-green-500' },
-    { url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=400&fit=crop', label: 'Dining Area', color: 'bg-purple-500' },
-  ],
-  indian: [
-    { url: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&h=400&fit=crop', label: 'Curry Set', color: 'bg-green-500' },
-    { url: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=600&h=400&fit=crop', label: 'Thali Plate', color: 'bg-green-500' },
-    { url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=400&fit=crop', label: 'Restaurant', color: 'bg-blue-500' },
-  ],
-  burger: [
-    { url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&h=400&fit=crop', label: 'Signature Burger', color: 'bg-green-500' },
-    { url: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=600&h=400&fit=crop', label: 'Combo Meal', color: 'bg-green-500' },
-    { url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=400&fit=crop', label: 'Interior', color: 'bg-purple-500' },
-  ],
-  sushi: [
-    { url: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600&h=400&fit=crop', label: 'Sushi Plate', color: 'bg-green-500' },
-    { url: 'https://images.unsplash.com/photo-1553621042-f6e147245754?w=600&h=400&fit=crop', label: 'Sashimi', color: 'bg-green-500' },
-    { url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=400&fit=crop', label: 'Counter', color: 'bg-purple-500' },
-  ],
-  thai: [
-    { url: 'https://images.unsplash.com/photo-1562565652-a0d8f0c59eb4?w=600&h=400&fit=crop', label: 'Pad Thai', color: 'bg-green-500' },
-    { url: 'https://images.unsplash.com/photo-1559314809-0d155014e29e?w=600&h=400&fit=crop', label: 'Curry Bowl', color: 'bg-green-500' },
-    { url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=400&fit=crop', label: 'Restaurant', color: 'bg-blue-500' },
-  ],
-  hawker: [
-    { url: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&h=400&fit=crop', label: 'Popular Dish', color: 'bg-green-500' },
-    { url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=400&fit=crop', label: 'Chef Special', color: 'bg-green-500' },
-    { url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=400&fit=crop', label: 'Hawker Stall', color: 'bg-blue-500' },
-  ],
-  kebab: [
-    { url: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=600&h=400&fit=crop', label: 'Shawarma', color: 'bg-green-500' },
-    { url: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&h=400&fit=crop', label: 'Mixed Grill', color: 'bg-green-500' },
-    { url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=400&fit=crop', label: 'Interior', color: 'bg-purple-500' },
-  ],
-  default: [
-    { url: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&h=400&fit=crop', label: 'Popular Dish', color: 'bg-green-500' },
-    { url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=400&fit=crop', label: 'Chef Special', color: 'bg-green-500' },
-    { url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=400&fit=crop', label: 'Interior', color: 'bg-purple-500' },
-  ],
-};
-
-function getPhotos(cuisineTypes: string[], mainPhoto?: string): CategorizedPhoto[] {
-  for (const cuisine of cuisineTypes) {
-    const key = Object.keys(CUISINE_PHOTO_SETS).find(k => cuisine.includes(k));
-    if (key) {
-      const photos = [...CUISINE_PHOTO_SETS[key]];
-      if (mainPhoto) photos[0] = { ...photos[0], url: mainPhoto };
-      return photos;
-    }
-  }
-  const photos = [...CUISINE_PHOTO_SETS.default];
-  if (mainPhoto) photos[0] = { ...photos[0], url: mainPhoto };
-  return photos;
-}
-
 interface Props {
-  cuisineTypes: string[];
-  mainPhoto?: string;
   restaurantName: string;
-  realPhotos?: Array<{ url: string; label: string; color: string }> | null;
+  realPhotos?: Photo[] | null;
+  // Legacy props (ignored — we only use real photos now)
+  cuisineTypes?: string[];
+  mainPhoto?: string;
 }
 
-export function PhotoGallery({ cuisineTypes, mainPhoto, restaurantName, realPhotos }: Props) {
-  // Use real Google photos if available, otherwise fall back to cuisine-based mock photos
-  const photos = (realPhotos && realPhotos.length > 0) ? realPhotos : getPhotos(cuisineTypes, mainPhoto);
+export function PhotoGallery({ restaurantName, realPhotos }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
+  // Only use real photos — NO mock fallback
+  const photos = realPhotos || [];
+
+  // No photos: show clean placeholder
   if (photos.length === 0) {
     return (
-      <div className="h-56 bg-gradient-to-br from-green-100 to-green-50 dark:from-green-950/30 dark:to-green-900/20 flex items-center justify-center">
-        <Camera size={48} className="text-green-300" />
+      <div className="h-48 bg-[var(--vb-bg-secondary)] flex flex-col items-center justify-center gap-2">
+        <ImageOff size={32} className="text-[var(--vb-text-secondary)] opacity-40" />
+        <p className="text-xs text-[var(--vb-text-secondary)]">Photos coming soon</p>
       </div>
     );
   }
 
   const current = photos[currentIndex];
 
+  // Swipe handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+  const handleTouchEnd = () => {
+    const diff = touchStartX.current - touchEndX.current;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) setCurrentIndex((i) => (i + 1) % photos.length); // swipe left → next
+      else setCurrentIndex((i) => (i - 1 + photos.length) % photos.length); // swipe right → prev
+    }
+  };
+
   return (
-    <div className="relative h-56 bg-gray-200 overflow-hidden">
+    <div
+      className="relative h-56 bg-gray-200 overflow-hidden"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       <img
         src={current.url}
         alt={`${restaurantName} — ${current.label}`}
         className="w-full h-full object-cover cursor-pointer"
         onClick={() => setFullscreen(true)}
+        loading="lazy"
       />
-
-      {/* Fullscreen viewer */}
-      {fullscreen && (
-        <FullScreenPhoto
-          photos={photos}
-          initialIndex={currentIndex}
-          onClose={() => setFullscreen(false)}
-        />
-      )}
 
       {/* Category label */}
       <div className="absolute top-3 left-3">
@@ -130,8 +76,8 @@ export function PhotoGallery({ cuisineTypes, mainPhoto, restaurantName, realPhot
         </span>
       </div>
 
-      {/* Counter + Google attribution */}
-      <div className="absolute bottom-3 right-3 flex gap-1.5">
+      {/* Counter + Google badge */}
+      <div className="absolute bottom-3 right-3">
         <span className="bg-black/60 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
           <Camera size={11} /> {currentIndex + 1}/{photos.length}
         </span>
@@ -143,11 +89,11 @@ export function PhotoGallery({ cuisineTypes, mainPhoto, restaurantName, realPhot
         </span>
       </div>
 
-      {/* Nav arrows */}
+      {/* Nav arrows (desktop) */}
       {photos.length > 1 && (
         <>
-          <button onClick={() => setCurrentIndex((i) => (i - 1 + photos.length) % photos.length)} className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center"><ChevronLeft size={18} /></button>
-          <button onClick={() => setCurrentIndex((i) => (i + 1) % photos.length)} className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center"><ChevronRight size={18} /></button>
+          <button onClick={() => setCurrentIndex((i) => (i - 1 + photos.length) % photos.length)} className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full hidden sm:flex items-center justify-center"><ChevronLeft size={18} /></button>
+          <button onClick={() => setCurrentIndex((i) => (i + 1) % photos.length)} className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full hidden sm:flex items-center justify-center"><ChevronRight size={18} /></button>
         </>
       )}
 
@@ -158,6 +104,15 @@ export function PhotoGallery({ cuisineTypes, mainPhoto, restaurantName, realPhot
             <button key={i} onClick={() => setCurrentIndex(i)} className={`w-2 h-2 rounded-full transition ${i === currentIndex ? 'bg-white' : 'bg-white/50'}`} />
           ))}
         </div>
+      )}
+
+      {/* Fullscreen viewer */}
+      {fullscreen && (
+        <FullScreenPhoto
+          photos={photos}
+          initialIndex={currentIndex}
+          onClose={() => setFullscreen(false)}
+        />
       )}
     </div>
   );
