@@ -34,11 +34,9 @@ export function HtmlLangUpdater() {
     document.documentElement.classList.toggle('light', !darkMode);
   }, [darkMode]);
 
-  // Geolocation — detect user's nearest city on first visit
+  // Geolocation — detect nearest city on every visit
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const hasVisited = localStorage.getItem('vb-geo-detected');
-    if (hasVisited) return;
 
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -47,11 +45,9 @@ export function HtmlLangUpdater() {
           useAppStore.getState().setCountryCode(city.cc);
           useAppStore.getState().setCityId(city.id, city.name);
           useAppStore.getState().setUserLocation(city.lat, city.lng);
-          localStorage.setItem('vb-geo-detected', 'true');
         },
         () => {
-          // Permission denied — keep defaults
-          localStorage.setItem('vb-geo-detected', 'true');
+          // Permission denied — keep saved preference
         },
         { timeout: 5000, maximumAge: 300000 }
       );
