@@ -29,6 +29,8 @@ interface AppState {
   // UI
   isMapView: boolean;
   toggleMapView: () => void;
+  darkMode: boolean;
+  setDarkMode: (on: boolean) => void;
 }
 
 // Load persisted state from localStorage
@@ -50,6 +52,7 @@ function persistState(state: Partial<AppState>) {
       cityId: state.cityId,
       cityName: state.cityName,
       showChains: state.showChains,
+      darkMode: state.darkMode,
     };
     localStorage.setItem('valuebite-prefs', JSON.stringify(toSave));
   } catch {}
@@ -98,4 +101,14 @@ export const useAppStore = create<AppState>((set, get) => ({
   // UI
   isMapView: true,
   toggleMapView: () => set((s) => ({ isMapView: !s.isMapView })),
+  darkMode: persisted.darkMode ?? true, // default dark
+  setDarkMode: (on) => {
+    set({ darkMode: on });
+    persistState({ ...get(), darkMode: on });
+    // Apply to DOM immediately
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.toggle('dark', on);
+      document.documentElement.classList.toggle('light', !on);
+    }
+  },
 }));

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Camera } from 'lucide-react';
+import { FullScreenPhoto } from './FullScreenPhoto';
 
 interface CategorizedPhoto {
   url: string;
@@ -90,6 +91,7 @@ interface Props {
 export function PhotoGallery({ cuisineTypes, mainPhoto, restaurantName }: Props) {
   const photos = getPhotos(cuisineTypes, mainPhoto);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [fullscreen, setFullscreen] = useState(false);
 
   if (photos.length === 0) {
     return (
@@ -106,8 +108,18 @@ export function PhotoGallery({ cuisineTypes, mainPhoto, restaurantName }: Props)
       <img
         src={current.url}
         alt={`${restaurantName} — ${current.label}`}
-        className="w-full h-full object-cover"
+        className="w-full h-full object-cover cursor-pointer"
+        onClick={() => setFullscreen(true)}
       />
+
+      {/* Fullscreen viewer */}
+      {fullscreen && (
+        <FullScreenPhoto
+          photos={photos}
+          initialIndex={currentIndex}
+          onClose={() => setFullscreen(false)}
+        />
+      )}
 
       {/* Category label */}
       <div className="absolute top-3 left-3">

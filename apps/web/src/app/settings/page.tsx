@@ -14,11 +14,10 @@ import {
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { locale, setLocale, countryCode, setCountryCode, cityId, cityName, setCityId, setUserLocation, showChains, toggleShowChains } = useAppStore();
+  const { locale, setLocale, countryCode, setCountryCode, cityId, cityName, setCityId, setUserLocation, showChains, toggleShowChains, darkMode, setDarkMode } = useAppStore();
   const [showRegionSelector, setShowRegionSelector] = useState(false);
   const [regionTab, setRegionTab] = useState<'region' | 'language'>('region');
   const [expandedCountry, setExpandedCountry] = useState<string | null>(null);
-  const [darkMode, setDarkMode] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [priceAlerts, setPriceAlerts] = useState(true);
   const [weeklyReport, setWeeklyReport] = useState(false);

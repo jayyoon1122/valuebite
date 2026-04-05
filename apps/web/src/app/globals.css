@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* Light mode (default) */
 :root {
   --vb-primary: #22c55e;
   --vb-primary-dark: #16a34a;
@@ -15,8 +16,18 @@
   --vb-value-over: #f97316;
 }
 
+/* Dark mode - activated by class on <html> */
+html.dark {
+  --vb-bg: #111827;
+  --vb-bg-secondary: #1f2937;
+  --vb-text: #f9fafb;
+  --vb-text-secondary: #9ca3af;
+  --vb-border: #374151;
+}
+
+/* Also respect OS preference if no explicit class set */
 @media (prefers-color-scheme: dark) {
-  :root {
+  html:not(.light) {
     --vb-bg: #111827;
     --vb-bg-secondary: #1f2937;
     --vb-text: #f9fafb;
