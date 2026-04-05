@@ -98,7 +98,8 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
   const aiSummary = getAISummaryForRestaurant(id) || DEFAULT_SUMMARY;
   const menu = SEED_MENUS[id] || DEFAULT_MENU;
   const purposeFits = DEFAULT_PURPOSE_FITS[id] || DEFAULT_FITS;
-  const totalReviewCount = (googleData?.totalReviews || 0) + userReviews.length;
+  // Use real review count from DB, or Google reviews count, or seed reviews
+  const totalReviewCount = (realGoogleReviews?.totalReviews || 0) || (googleData?.totalReviews || 0) || (dbRestaurant?.totalReviews || 0) || userReviews.length;
 
   return (
     <div className="min-h-screen pb-20">
@@ -128,8 +129,8 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
               <p className="text-sm text-[var(--vb-text-secondary)]">{restaurant.name.original}</p>
             )}
             <div className="flex items-center gap-2 mt-1">
-              {restaurant.cuisineType?.map((c) => (
-                <span key={c} className="text-sm capitalize bg-[var(--vb-bg-secondary)] px-2 py-0.5 rounded">{c}</span>
+              {restaurant.cuisineType?.filter((c: string) => !['meal_takeaway','meal_delivery','store','lodging','bar','night_club','cafe','bakery','supermarket','gas_station','atm','parking'].includes(c)).slice(0, 3).map((c: string) => (
+                <span key={c} className="text-sm capitalize bg-[var(--vb-bg-secondary)] px-2 py-0.5 rounded">{c.replace(/_/g, ' ')}</span>
               ))}
             </div>
           </div>

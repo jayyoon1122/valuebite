@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
@@ -22,7 +22,19 @@ export default function HomePage() {
   const { isMapView, userLat, userLng, selectedPurpose, countryCode, showChains, cityId, cityName } = useAppStore();
   const [sheetExpanded, setSheetExpanded] = useState(false);
 
-  const allRestaurants = getRestaurantsForCity(cityId || 'tokyo');
+  const seedRestaurants = getRestaurantsForCity(cityId || 'tokyo');
+  const [dbRestaurants, setDbRestaurants] = useState<any[]>([]);
+
+  // Fetch real restaurants from Supabase
+  useEffect(() => {
+    fetch(`/api/restaurants/nearby?lat=${userLat}&lng=${userLng}&radius=15`)
+      .then(r => r.json())
+      .then(d => { if (d.success && d.data?.length > 0) setDbRestaurants(d.data); })
+      .catch(() => {});
+  }, [userLat, userLng]);
+
+  // Use DB restaurants if available, otherwise seed data
+  const allRestaurants = dbRestaurants.length > 0 ? dbRestaurants : seedRestaurants;
   const hasData = allRestaurants.length > 0;
 
   let filtered = selectedPurpose

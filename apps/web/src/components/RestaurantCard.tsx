@@ -66,7 +66,7 @@ export function RestaurantCard({ restaurant, countryCode = 'JP' }: Props) {
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-base truncate">{name}</h3>
           <div className="flex items-center gap-2 mt-1 text-sm text-[var(--vb-text-secondary)]">
-            {restaurant.cuisineType?.slice(0, 2).map((c) => (
+            {restaurant.cuisineType?.filter(c => !['meal_takeaway','meal_delivery','store','lodging','bar','night_club','cafe','bakery','supermarket'].includes(c)).slice(0, 2).map((c) => (
               <span key={c} className="capitalize">{c}</span>
             ))}
           </div>
