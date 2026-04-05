@@ -18,6 +18,7 @@ export default function CommunityPage() {
   const [postTitle, setPostTitle] = useState('');
   const [postContent, setPostContent] = useState('');
   const [postSubmitted, setPostSubmitted] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
   const tabs = ['All', 'Tips', 'Deals', 'Discussions'];
 
   const filtered = activeTab === 'All'
@@ -93,11 +94,74 @@ export default function CommunityPage() {
         </div>
       )}
 
+      {/* Post detail modal */}
+      {selectedPost && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center" onClick={() => setSelectedPost(null)}>
+          <div className="bg-[var(--vb-bg)] w-full max-w-lg rounded-t-2xl sm:rounded-2xl max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-[var(--vb-border)]">
+              <span className={`px-2 py-0.5 rounded text-xs font-semibold ${typeStyles[selectedPost.type]?.bg} ${typeStyles[selectedPost.type]?.text}`}>
+                {typeStyles[selectedPost.type]?.label}
+              </span>
+              <button onClick={() => setSelectedPost(null)} className="p-1"><X size={20} /></button>
+            </div>
+            <div className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-full bg-[var(--vb-primary)] flex items-center justify-center text-white text-xs font-bold">{selectedPost.user?.charAt(0)}</div>
+                <div>
+                  <span className="text-sm font-medium">{selectedPost.user}</span>
+                  {selectedPost.userLevel >= 3 && <span className="ml-1 text-xs text-purple-500">Expert</span>}
+                  <p className="text-xs text-[var(--vb-text-secondary)]">{selectedPost.time}</p>
+                </div>
+              </div>
+              <h2 className="text-lg font-bold mb-3">{selectedPost.title}</h2>
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">{selectedPost.content}</p>
+              <div className="flex items-center gap-6 mt-4 pt-3 border-t border-[var(--vb-border)] text-sm">
+                <button className="flex items-center gap-1.5 text-[var(--vb-text-secondary)] hover:text-[var(--vb-primary)]">
+                  <TrendingUp size={18} /> {selectedPost.upvotes} upvotes
+                </button>
+                <button className="flex items-center gap-1.5 text-[var(--vb-text-secondary)] hover:text-[var(--vb-primary)]">
+                  <MessageSquare size={18} /> {selectedPost.comments} comments
+                </button>
+              </div>
+              {/* Comments section */}
+              <div className="mt-4 space-y-3">
+                <h3 className="text-sm font-semibold">Comments</h3>
+                {[
+                  { user: 'FoodLover', text: 'Great tip! Thanks for sharing 🙏', time: '1h ago' },
+                  { user: 'BudgetDiner', text: 'Can confirm, this place is amazing for the price!', time: '3h ago' },
+                  { user: 'LocalGuide', text: 'Been going here for years. Consistency is key.', time: '5h ago' },
+                ].map((c, i) => (
+                  <div key={i} className="flex gap-2">
+                    <div className="w-6 h-6 rounded-full bg-[var(--vb-bg-secondary)] flex items-center justify-center text-xs font-bold shrink-0">{c.user.charAt(0)}</div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium">{c.user}</span>
+                        <span className="text-xs text-[var(--vb-text-secondary)]">{c.time}</span>
+                      </div>
+                      <p className="text-sm">{c.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Add comment */}
+              <div className="mt-4 flex gap-2">
+                <input type="text" placeholder="Add a comment..." className="flex-1 px-3 py-2 rounded-lg bg-[var(--vb-bg-secondary)] border border-[var(--vb-border)] text-sm" />
+                <button className="px-4 py-2 bg-[var(--vb-primary)] text-white rounded-lg text-sm font-semibold">Post</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="px-4 py-4 space-y-3 max-w-2xl mx-auto">
         {filtered.map((post) => {
           const style = typeStyles[post.type];
           return (
-            <div key={post.id} className="bg-[var(--vb-bg)] border border-[var(--vb-border)] rounded-xl p-4">
+            <div
+              key={post.id}
+              onClick={() => setSelectedPost(post)}
+              className="bg-[var(--vb-bg)] border border-[var(--vb-border)] rounded-xl p-4 cursor-pointer hover:shadow-md transition-shadow active:scale-[0.99]"
+            >
               <div className="flex items-center gap-2 mb-2">
                 <span className={`px-2 py-0.5 rounded text-xs font-semibold ${style.bg} ${style.text}`}>{style.label}</span>
                 <span className="text-xs text-[var(--vb-text-secondary)]">{post.user}</span>
@@ -107,12 +171,12 @@ export default function CommunityPage() {
               <h3 className="font-semibold">{post.title}</h3>
               <p className="text-sm text-[var(--vb-text-secondary)] mt-1 line-clamp-3">{post.content}</p>
               <div className="flex items-center gap-4 mt-3 text-sm text-[var(--vb-text-secondary)]">
-                <button className="flex items-center gap-1 hover:text-[var(--vb-primary)]">
+                <span className="flex items-center gap-1">
                   <TrendingUp size={16} /> {post.upvotes}
-                </button>
-                <button className="flex items-center gap-1 hover:text-[var(--vb-primary)]">
+                </span>
+                <span className="flex items-center gap-1">
                   <MessageSquare size={16} /> {post.comments}
-                </button>
+                </span>
               </div>
             </div>
           );

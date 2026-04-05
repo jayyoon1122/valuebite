@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
@@ -19,6 +20,7 @@ const FIRST_AD_POSITION = 4;
 export default function HomePage() {
   const router = useRouter();
   const { isMapView, userLat, userLng, selectedPurpose, countryCode, showChains, cityId, cityName } = useAppStore();
+  const [sheetExpanded, setSheetExpanded] = useState(false);
 
   const allRestaurants = getRestaurantsForCity(cityId || 'tokyo');
   const hasData = allRestaurants.length > 0;
@@ -117,12 +119,23 @@ export default function HomePage() {
             countryCode={countryCode}
             onMarkerClick={(id) => router.push(`/restaurant/${id}`)}
           />
-          {/* Bottom sheet — starts at 30%, scrollable to see more */}
-          <div className="absolute bottom-0 left-0 right-0 bg-[var(--vb-bg)] rounded-t-2xl shadow-lg" style={{ maxHeight: '35vh' }}>
-            <div className="overflow-y-auto" style={{ maxHeight: '35vh' }}>
-              <div className="sticky top-0 bg-[var(--vb-bg)] flex justify-center py-2 z-10 rounded-t-2xl">
-                <div className="w-10 h-1 rounded-full bg-gray-300" />
-              </div>
+          {/* Bottom sheet — tap handle to toggle between peek and full */}
+          <div
+            className="absolute bottom-0 left-0 right-0 bg-[var(--vb-bg)] rounded-t-2xl shadow-lg transition-all duration-300 ease-out overflow-hidden"
+            style={{ height: sheetExpanded ? '75vh' : '30vh' }}
+          >
+            {/* Drag handle — large touch target */}
+            <button
+              onClick={() => setSheetExpanded(!sheetExpanded)}
+              className="w-full flex flex-col items-center py-3 cursor-pointer active:bg-[var(--vb-bg-secondary)] transition"
+              aria-label={sheetExpanded ? 'Collapse restaurant list' : 'Expand restaurant list'}
+            >
+              <div className="w-12 h-1.5 rounded-full bg-gray-400" />
+              <span className="text-xs text-[var(--vb-text-secondary)] mt-1">
+                {sheetExpanded ? 'Tap to see map' : 'Tap to see more'}
+              </span>
+            </button>
+            <div className="overflow-y-auto" style={{ height: sheetExpanded ? 'calc(75vh - 50px)' : 'calc(30vh - 50px)' }}>
               <div className="px-4 pb-20 space-y-3">{renderFeed()}</div>
             </div>
           </div>
