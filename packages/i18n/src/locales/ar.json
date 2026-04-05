@@ -1,0 +1,15 @@
+{
+  "common": { "appName": "ValueBite", "search": "ابحث عن مطاعم...", "nearby": "بالقرب مني", "trending": "رائج", "seeAll": "عرض الكل", "loading": "جارٍ التحميل...", "error": "حدث خطأ ما", "retry": "حاول مجدداً", "save": "حفظ", "cancel": "إلغاء", "delete": "حذف", "edit": "تعديل", "share": "مشاركة", "back": "رجوع", "next": "التالي", "done": "تم", "skip": "تخطي" },
+  "nav": { "map": "الخريطة", "discover": "اكتشف", "purpose": "المناسبة", "community": "المجتمع", "profile": "الملف الشخصي" },
+  "purpose": { "daily_eats": "وجبات يومية", "good_value": "قيمة ممتازة", "date_night": "سهرة رومانسية", "family_dinner": "عشاء عائلي", "late_night": "أكل ليلي", "healthy_budget": "صحي واقتصادي", "group_party": "مجموعات وحفلات", "solo_dining": "أكل لوحدك", "special_occasion": "مناسبة خاصة" },
+  "restaurant": { "valueScore": "تقييم القيمة", "reviews": "التقييمات", "menu": "القائمة", "photos": "الصور", "directions": "الاتجاهات", "hours": "ساعات العمل", "open": "مفتوح", "closed": "مغلق", "verified": "موثّق", "avgPrice": "المتوسط {price}/شخص", "distance": "على بُعد {distance}", "noResults": "لم يتم العثور على مطاعم قريبة", "adjustFilters": "جرّب تعديل الفلاتر أو البحث في منطقة أخرى" },
+  "review": { "wasItWorthIt": "هل تستحق؟", "yesWorthIt": "بالتأكيد!", "notWorthIt": "ليس تماماً", "writeReview": "اكتب تقييم", "pricePaid": "كم دفعت؟", "taste": "الطعم", "portions": "الحصص", "value": "القيمة", "submitReview": "إرسال التقييم", "helpful": "مفيد", "aiSummary": "ملخص الذكاء الاصطناعي" },
+  "price": { "under": "أقل من {amount}", "perPerson": "/شخص", "verified": "الأسعار مُوثقة بتاريخ {date}", "mayHaveChanged": "قد تكون الأسعار تغيرت منذ {date}" },
+  "budget": { "monthlyBudget": "الميزانية الشهرية", "spent": "المصروفات هذا الشهر", "remaining": "متبقي {amount}", "saved": "وفّرت {amount} مقارنةً بالمتوسط!" },
+  "auth": { "login": "تسجيل الدخول", "signup": "إنشاء حساب", "logout": "تسجيل الخروج", "continueWithGoogle": "المتابعة عبر Google", "continueWithApple": "المتابعة عبر Apple", "skipForNow": "تخطي الآن" },
+  "community": { "feed": "المجتمع", "newPost": "منشور جديد", "tips": "نصائح", "deals": "عروض", "discussions": "نقاشات" },
+  "freshness": { "recentlyVerified": "تم التوثيق مؤخراً", "verified1to3": "تم التوثيق قبل 1-3 أشهر", "mayBeOutdated": "قد تكون قديمة", "unverified": "غير موثّقة" },
+  "ads": { "sponsored": "إعلان مموّل", "promoted": "مُروَّج" },
+  "region": { "selectRegion": "اختر المنطقة", "selectLanguage": "اللغة", "currentCity": "المدينة الحالية", "allCities": "جميع المدن" },
+  "chain": { "showAll": "عرض الكل", "hideChains": "إخفاء السلاسل", "chainsHidden": "السلاسل مخفية" }
+}

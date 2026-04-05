@@ -1,0 +1,86 @@
+{
+  "common": {
+    "appName": "밸류바이트",
+    "search": "맛집 검색...",
+    "nearby": "내 주변",
+    "trending": "인기",
+    "seeAll": "전체보기",
+    "loading": "로딩 중...",
+    "error": "오류가 발생했습니다",
+    "retry": "다시 시도",
+    "save": "저장",
+    "cancel": "취소",
+    "delete": "삭제",
+    "edit": "수정",
+    "share": "공유",
+    "back": "뒤로",
+    "next": "다음",
+    "done": "완료",
+    "skip": "건너뛰기"
+  },
+  "nav": {
+    "map": "지도",
+    "discover": "탐색",
+    "purpose": "목적별",
+    "community": "커뮤니티",
+    "profile": "프로필"
+  },
+  "purpose": {
+    "daily_eats": "일상 식사",
+    "good_value": "가성비",
+    "date_night": "데이트",
+    "family_dinner": "가족 외식",
+    "late_night": "야식",
+    "healthy_budget": "건강 식단",
+    "group_party": "단체/회식",
+    "solo_dining": "혼밥",
+    "special_occasion": "특별한 날"
+  },
+  "restaurant": {
+    "valueScore": "가성비 점수",
+    "reviews": "리뷰",
+    "menu": "메뉴",
+    "photos": "사진",
+    "directions": "길찾기",
+    "call": "전화",
+    "website": "웹사이트",
+    "hours": "영업시간",
+    "open": "영업 중",
+    "closed": "영업 종료",
+    "openUntil": "{time}까지 영업",
+    "closedUntil": "{time}에 오픈",
+    "verified": "인증됨",
+    "avgPrice": "평균 {price}/인",
+    "distance": "{distance} 거리",
+    "noResults": "주변에 맛집이 없습니다",
+    "adjustFilters": "필터를 조정하거나 다른 지역에서 검색해보세요"
+  },
+  "review": {
+    "wasItWorthIt": "가성비 괜찮았나요?",
+    "yesWorthIt": "네!",
+    "notWorthIt": "별로...",
+    "writeReview": "리뷰 쓰기",
+    "pricePaid": "얼마 쓰셨나요?",
+    "taste": "맛",
+    "portions": "양",
+    "value": "가성비",
+    "submitReview": "리뷰 등록",
+    "helpful": "도움이 됐어요",
+    "aiSummary": "AI 요약"
+  },
+  "ads": {
+    "sponsored": "광고",
+    "promoted": "추천"
+  },
+  "region": {
+    "selectRegion": "지역 선택",
+    "selectLanguage": "언어",
+    "currentCity": "현재 도시",
+    "allCities": "모든 도시"
+  },
+  "chain": {
+    "showAll": "전체 보기",
+    "hideChains": "체인점 숨기기",
+    "chainsHidden": "체인점 숨김"
+  }
+}

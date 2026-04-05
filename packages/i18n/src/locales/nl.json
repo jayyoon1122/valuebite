@@ -1,0 +1,15 @@
+{
+  "common": { "appName": "ValueBite", "search": "Restaurants zoeken...", "nearby": "In de buurt", "trending": "Populair", "seeAll": "Alles bekijken", "loading": "Laden...", "error": "Er ging iets mis", "retry": "Opnieuw proberen", "save": "Opslaan", "cancel": "Annuleren", "delete": "Verwijderen", "edit": "Bewerken", "share": "Delen", "back": "Terug", "next": "Volgende", "done": "Klaar", "skip": "Overslaan" },
+  "nav": { "map": "Kaart", "discover": "Ontdek", "purpose": "Gelegenheid", "community": "Community", "profile": "Profiel" },
+  "purpose": { "daily_eats": "Dagelijks eten", "good_value": "Goede prijs-kwaliteit", "date_night": "Date-avond", "family_dinner": "Familiediner", "late_night": "Laat op de avond", "healthy_budget": "Gezond & voordelig", "group_party": "Groep & feest", "solo_dining": "Alleen eten", "special_occasion": "Speciale gelegenheid" },
+  "restaurant": { "valueScore": "Waardescore", "reviews": "Beoordelingen", "menu": "Menu", "photos": "Foto's", "directions": "Routebeschrijving", "hours": "Openingstijden", "open": "Open", "closed": "Gesloten", "verified": "Geverifieerd", "avgPrice": "Gem. {price}/persoon", "distance": "{distance} verderop", "noResults": "Geen restaurants in de buurt gevonden", "adjustFilters": "Pas je filters aan of zoek in een ander gebied" },
+  "review": { "wasItWorthIt": "Was het de moeite waard?", "yesWorthIt": "Zeker!", "notWorthIt": "Niet echt", "writeReview": "Schrijf een beoordeling", "pricePaid": "Hoeveel heb je betaald?", "taste": "Smaak", "portions": "Porties", "value": "Prijs-kwaliteit", "submitReview": "Beoordeling plaatsen", "helpful": "Nuttig", "aiSummary": "AI-samenvatting" },
+  "price": { "under": "Onder {amount}", "perPerson": "/persoon", "verified": "Prijzen geverifieerd op {date}", "mayHaveChanged": "Prijzen kunnen gewijzigd zijn sinds {date}" },
+  "budget": { "monthlyBudget": "Maandbudget", "spent": "Uitgegeven deze maand", "remaining": "{amount} over", "saved": "Je hebt {amount} bespaard ten opzichte van het gemiddelde!" },
+  "auth": { "login": "Inloggen", "signup": "Registreren", "logout": "Uitloggen", "continueWithGoogle": "Doorgaan met Google", "continueWithApple": "Doorgaan met Apple", "skipForNow": "Nu overslaan" },
+  "community": { "feed": "Community", "newPost": "Nieuw bericht", "tips": "Tips", "deals": "Aanbiedingen", "discussions": "Discussies" },
+  "freshness": { "recentlyVerified": "Recent geverifieerd", "verified1to3": "1-3 maanden geleden geverifieerd", "mayBeOutdated": "Mogelijk verouderd", "unverified": "Niet geverifieerd" },
+  "ads": { "sponsored": "Gesponsord", "promoted": "Aanbevolen" },
+  "region": { "selectRegion": "Regio kiezen", "selectLanguage": "Taal", "currentCity": "Huidige stad", "allCities": "Alle steden" },
+  "chain": { "showAll": "Alles tonen", "hideChains": "Ketens verbergen", "chainsHidden": "Ketens verborgen" }
+}

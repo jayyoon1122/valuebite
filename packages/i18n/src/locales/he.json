@@ -1,0 +1,15 @@
+{
+  "common": { "appName": "ValueBite", "search": "חיפוש מסעדות...", "nearby": "בקרבת מקום", "trending": "פופולרי", "seeAll": "הצג הכל", "loading": "טוען...", "error": "משהו השתבש", "retry": "נסה שוב", "save": "שמירה", "cancel": "ביטול", "delete": "מחיקה", "edit": "עריכה", "share": "שיתוף", "back": "חזרה", "next": "הבא", "done": "סיום", "skip": "דלג" },
+  "nav": { "map": "מפה", "discover": "גלה", "purpose": "הזדמנות", "community": "קהילה", "profile": "פרופיל" },
+  "purpose": { "daily_eats": "אוכל יומיומי", "good_value": "תמורה טובה", "date_night": "ערב רומנטי", "family_dinner": "ארוחה משפחתית", "late_night": "אוכל לילי", "healthy_budget": "בריא וזול", "group_party": "קבוצות ומסיבות", "solo_dining": "אכילה לבד", "special_occasion": "אירוע מיוחד" },
+  "restaurant": { "valueScore": "ציון תמורה", "reviews": "ביקורות", "menu": "תפריט", "photos": "תמונות", "directions": "הוראות הגעה", "hours": "שעות פעילות", "open": "פתוח", "closed": "סגור", "verified": "מאומת", "avgPrice": "ממוצע {price}/אדם", "distance": "{distance} מכאן", "noResults": "לא נמצאו מסעדות בקרבת מקום", "adjustFilters": "נסו לשנות את המסננים או לחפש באזור אחר" },
+  "review": { "wasItWorthIt": "שווה את זה?", "yesWorthIt": "בהחלט!", "notWorthIt": "לא ממש", "writeReview": "כתיבת ביקורת", "pricePaid": "כמה שילמת?", "taste": "טעם", "portions": "מנות", "value": "תמורה", "submitReview": "שליחת ביקורת", "helpful": "מועיל", "aiSummary": "סיכום AI" },
+  "price": { "under": "עד {amount}", "perPerson": "/אדם", "verified": "מחירים אומתו ב-{date}", "mayHaveChanged": "ייתכן שהמחירים השתנו מאז {date}" },
+  "budget": { "monthlyBudget": "תקציב חודשי", "spent": "הוצאות החודש", "remaining": "נותרו {amount}", "saved": "חסכת {amount} ביחס לממוצע!" },
+  "auth": { "login": "התחברות", "signup": "הרשמה", "logout": "התנתקות", "continueWithGoogle": "המשך עם Google", "continueWithApple": "המשך עם Apple", "skipForNow": "דלג לעת עתה" },
+  "community": { "feed": "קהילה", "newPost": "פוסט חדש", "tips": "טיפים", "deals": "מבצעים", "discussions": "דיונים" },
+  "freshness": { "recentlyVerified": "אומת לאחרונה", "verified1to3": "אומת לפני 1-3 חודשים", "mayBeOutdated": "ייתכן שלא מעודכן", "unverified": "לא מאומת" },
+  "ads": { "sponsored": "ממומן", "promoted": "מומלץ" },
+  "region": { "selectRegion": "בחירת אזור", "selectLanguage": "שפה", "currentCity": "עיר נוכחית", "allCities": "כל הערים" },
+  "chain": { "showAll": "הצג הכל", "hideChains": "הסתר רשתות", "chainsHidden": "רשתות מוסתרות" }
+}

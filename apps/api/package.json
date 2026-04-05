@@ -1,0 +1,30 @@
+{
+  "name": "@valuebite/api",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@valuebite/db": "*",
+    "@valuebite/types": "*",
+    "@valuebite/utils": "*",
+    "@valuebite/i18n": "*",
+    "fastify": "^5.2.0",
+    "@fastify/cors": "^11.0.0",
+    "@fastify/jwt": "^9.0.0",
+    "@fastify/multipart": "^9.0.0",
+    "drizzle-orm": "^0.44.0",
+    "postgres": "^3.4.0",
+    "bcryptjs": "^2.4.3",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "@types/bcryptjs": "^2.4.6",
+    "dotenv": "^16.4.0"
+  }
+}

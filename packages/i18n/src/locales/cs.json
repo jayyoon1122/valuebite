@@ -1,0 +1,15 @@
+{
+  "common": { "appName": "ValueBite", "search": "Hledat restaurace...", "nearby": "V okolí", "trending": "Trendy", "seeAll": "Zobrazit vše", "loading": "Načítání...", "error": "Něco se pokazilo", "retry": "Zkusit znovu", "save": "Uložit", "cancel": "Zrušit", "delete": "Smazat", "edit": "Upravit", "share": "Sdílet", "back": "Zpět", "next": "Další", "done": "Hotovo", "skip": "Přeskočit" },
+  "nav": { "map": "Mapa", "discover": "Objevovat", "purpose": "Příležitost", "community": "Komunita", "profile": "Profil" },
+  "purpose": { "daily_eats": "Každodenní jídlo", "good_value": "Dobrá cena", "date_night": "Romantický večer", "family_dinner": "Rodinná večeře", "late_night": "Noční jídlo", "healthy_budget": "Zdravě & levně", "group_party": "Skupiny & oslavy", "solo_dining": "Jídlo pro jednoho", "special_occasion": "Zvláštní příležitost" },
+  "restaurant": { "valueScore": "Hodnocení hodnoty", "reviews": "Recenze", "menu": "Jídelní lístek", "photos": "Fotky", "directions": "Navigace", "hours": "Otevírací doba", "open": "Otevřeno", "closed": "Zavřeno", "verified": "Ověřeno", "avgPrice": "Prům. {price}/os.", "distance": "{distance} daleko", "noResults": "V okolí nebyly nalezeny žádné restaurace", "adjustFilters": "Zkuste upravit filtry nebo hledejte v jiné oblasti" },
+  "review": { "wasItWorthIt": "Stálo to za to?", "yesWorthIt": "Rozhodně!", "notWorthIt": "Spíš ne", "writeReview": "Napsat recenzi", "pricePaid": "Kolik jste zaplatili?", "taste": "Chuť", "portions": "Porce", "value": "Poměr cena/kvalita", "submitReview": "Odeslat recenzi", "helpful": "Užitečné", "aiSummary": "AI shrnutí" },
+  "price": { "under": "Pod {amount}", "perPerson": "/os.", "verified": "Ceny ověřeny {date}", "mayHaveChanged": "Ceny se mohly od {date} změnit" },
+  "budget": { "monthlyBudget": "Měsíční rozpočet", "spent": "Utraceno tento měsíc", "remaining": "Zbývá {amount}", "saved": "Ušetřili jste {amount} oproti průměru!" },
+  "auth": { "login": "Přihlásit se", "signup": "Zaregistrovat se", "logout": "Odhlásit se", "continueWithGoogle": "Pokračovat přes Google", "continueWithApple": "Pokračovat přes Apple", "skipForNow": "Zatím přeskočit" },
+  "community": { "feed": "Komunita", "newPost": "Nový příspěvek", "tips": "Tipy", "deals": "Nabídky", "discussions": "Diskuze" },
+  "freshness": { "recentlyVerified": "Nedávno ověřeno", "verified1to3": "Ověřeno před 1-3 měsíci", "mayBeOutdated": "Může být zastaralé", "unverified": "Neověřeno" },
+  "ads": { "sponsored": "Sponzorováno", "promoted": "Doporučeno" },
+  "region": { "selectRegion": "Vybrat region", "selectLanguage": "Jazyk", "currentCity": "Aktuální město", "allCities": "Všechna města" },
+  "chain": { "showAll": "Zobrazit vše", "hideChains": "Skrýt řetězce", "chainsHidden": "Řetězce skryty" }
+}

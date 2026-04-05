@@ -1,0 +1,15 @@
+{
+  "common": { "appName": "ValueBite", "search": "Éttermek keresése...", "nearby": "A közelben", "trending": "Felkapott", "seeAll": "Összes", "loading": "Betöltés...", "error": "Hiba történt", "retry": "Újrapróbálás", "save": "Mentés", "cancel": "Mégse", "delete": "Törlés", "edit": "Szerkesztés", "share": "Megosztás", "back": "Vissza", "next": "Tovább", "done": "Kész", "skip": "Kihagyás" },
+  "nav": { "map": "Térkép", "discover": "Felfedezés", "purpose": "Alkalom", "community": "Közösség", "profile": "Profil" },
+  "purpose": { "daily_eats": "Hétköznapi étkezés", "good_value": "Jó ár-érték", "date_night": "Romantikus vacsora", "family_dinner": "Családi vacsora", "late_night": "Éjszakai falat", "healthy_budget": "Egészséges & olcsó", "group_party": "Csoportos & buli", "solo_dining": "Egyedül enni", "special_occasion": "Különleges alkalom" },
+  "restaurant": { "valueScore": "Értékpontszám", "reviews": "Értékelések", "menu": "Étlap", "photos": "Fotók", "directions": "Útvonal", "hours": "Nyitvatartás", "open": "Nyitva", "closed": "Zárva", "verified": "Ellenőrzött", "avgPrice": "Átl. {price}/fő", "distance": "{distance} távolságra", "noResults": "Nem található étterem a közelben", "adjustFilters": "Próbáld módosítani a szűrőket, vagy keress másik területen" },
+  "review": { "wasItWorthIt": "Megérte?", "yesWorthIt": "Igen!", "notWorthIt": "Nem igazán", "writeReview": "Vélemény írása", "pricePaid": "Mennyit fizettél?", "taste": "Ízek", "portions": "Adagok", "value": "Ár-érték arány", "submitReview": "Vélemény küldése", "helpful": "Hasznos", "aiSummary": "AI összefoglaló" },
+  "price": { "under": "{amount} alatt", "perPerson": "/fő", "verified": "Árak ellenőrizve: {date}", "mayHaveChanged": "Az árak {date} óta változhattak" },
+  "budget": { "monthlyBudget": "Havi keret", "spent": "Elköltve ebben a hónapban", "remaining": "{amount} maradt", "saved": "Az átlaghoz képest {amount} összegű megtakarítás!" },
+  "auth": { "login": "Bejelentkezés", "signup": "Regisztráció", "logout": "Kijelentkezés", "continueWithGoogle": "Folytatás Google-lal", "continueWithApple": "Folytatás Apple-lel", "skipForNow": "Most kihagyom" },
+  "community": { "feed": "Közösség", "newPost": "Új bejegyzés", "tips": "Tippek", "deals": "Akciók", "discussions": "Beszélgetések" },
+  "freshness": { "recentlyVerified": "Nemrég ellenőrizve", "verified1to3": "1-3 hónapja ellenőrizve", "mayBeOutdated": "Lehet, hogy elavult", "unverified": "Nem ellenőrzött" },
+  "ads": { "sponsored": "Szponzorált", "promoted": "Kiemelt" },
+  "region": { "selectRegion": "Régió kiválasztása", "selectLanguage": "Nyelv", "currentCity": "Jelenlegi város", "allCities": "Összes város" },
+  "chain": { "showAll": "Összes mutatása", "hideChains": "Láncok elrejtése", "chainsHidden": "Láncok elrejtve" }
+}

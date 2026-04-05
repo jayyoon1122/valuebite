@@ -1,0 +1,15 @@
+{
+  "common": { "appName": "ValueBite", "search": "Restoran ara...", "nearby": "Yakınımda", "trending": "Popüler", "seeAll": "Tümünü gör", "loading": "Yükleniyor...", "error": "Bir şeyler ters gitti", "retry": "Tekrar dene", "save": "Kaydet", "cancel": "İptal", "delete": "Sil", "edit": "Düzenle", "share": "Paylaş", "back": "Geri", "next": "İleri", "done": "Tamam", "skip": "Atla" },
+  "nav": { "map": "Harita", "discover": "Keşfet", "purpose": "Amaç", "community": "Topluluk", "profile": "Profil" },
+  "purpose": { "daily_eats": "Günlük yemek", "good_value": "Uygun fiyat", "date_night": "Romantik akşam", "family_dinner": "Aile yemeği", "late_night": "Gece atıştırması", "healthy_budget": "Sağlıklı & bütçeye uygun", "group_party": "Grup & parti", "solo_dining": "Tek başına yemek", "special_occasion": "Özel gün" },
+  "restaurant": { "valueScore": "Değer puanı", "reviews": "Yorumlar", "menu": "Menü", "photos": "Fotoğraflar", "directions": "Yol tarifi", "hours": "Çalışma saatleri", "open": "Açık", "closed": "Kapalı", "verified": "Doğrulanmış", "avgPrice": "Ort. {price}/kişi", "distance": "{distance} uzaklıkta", "noResults": "Yakınlarda restoran bulunamadı", "adjustFilters": "Filtreleri değiştirmeyi veya başka bir bölgede aramayı deneyin" },
+  "review": { "wasItWorthIt": "Değdi mi?", "yesWorthIt": "Kesinlikle!", "notWorthIt": "Pek değmedi", "writeReview": "Yorum yaz", "pricePaid": "Ne kadar ödediniz?", "taste": "Lezzet", "portions": "Porsiyon", "value": "Fiyat-performans", "submitReview": "Yorumu gönder", "helpful": "Faydalı", "aiSummary": "Yapay zeka özeti" },
+  "price": { "under": "{amount} altı", "perPerson": "/kişi", "verified": "Fiyatlar {date} tarihinde doğrulandı", "mayHaveChanged": "Fiyatlar {date} tarihinden beri değişmiş olabilir" },
+  "budget": { "monthlyBudget": "Aylık bütçe", "spent": "Bu ay harcanan", "remaining": "{amount} kaldı", "saved": "Ortalamaya göre {amount} tasarruf ettiniz!" },
+  "auth": { "login": "Giriş yap", "signup": "Kayıt ol", "logout": "Çıkış yap", "continueWithGoogle": "Google ile devam et", "continueWithApple": "Apple ile devam et", "skipForNow": "Şimdilik geç" },
+  "community": { "feed": "Topluluk", "newPost": "Yeni gönderi", "tips": "İpuçları", "deals": "Fırsatlar", "discussions": "Tartışmalar" },
+  "freshness": { "recentlyVerified": "Yakın zamanda doğrulandı", "verified1to3": "1-3 ay önce doğrulandı", "mayBeOutdated": "Güncel olmayabilir", "unverified": "Doğrulanmamış" },
+  "ads": { "sponsored": "Sponsorlu", "promoted": "Öne çıkan" },
+  "region": { "selectRegion": "Bölge seçin", "selectLanguage": "Dil", "currentCity": "Mevcut şehir", "allCities": "Tüm şehirler" },
+  "chain": { "showAll": "Tümünü göster", "hideChains": "Zincirleri gizle", "chainsHidden": "Zincirler gizli" }
+}

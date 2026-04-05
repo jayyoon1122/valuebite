@@ -1,0 +1,26 @@
+{
+  "name": "valuebite",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "dev:web": "turbo dev --filter=@valuebite/web",
+    "dev:api": "turbo dev --filter=@valuebite/api",
+    "dev:mobile": "turbo dev --filter=@valuebite/mobile",
+    "db:generate": "turbo db:generate --filter=@valuebite/db",
+    "db:migrate": "turbo db:migrate --filter=@valuebite/db",
+    "db:seed": "turbo db:seed --filter=@valuebite/db"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0"
+  },
+  "packageManager": "npm@11.11.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "ValueBite",
+    "slug": "valuebite",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "scheme": "valuebite",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.valuebite.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "ValueBite needs your location to find restaurants near you.",
+        "NSCameraUsageDescription": "ValueBite uses your camera to scan restaurant menus."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#22c55e"
+      },
+      "package": "com.valuebite.app",
+      "permissions": ["ACCESS_FINE_LOCATION", "CAMERA"]
+    },
+    "plugins": ["expo-router", "expo-location", "expo-camera"]
+  }
+}

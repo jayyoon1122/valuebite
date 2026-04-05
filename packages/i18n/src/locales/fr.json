@@ -1,0 +1,15 @@
+{
+  "common": { "appName": "ValueBite", "search": "Chercher des restaurants...", "nearby": "À proximité", "trending": "Tendances", "seeAll": "Tout voir", "loading": "Chargement...", "error": "Une erreur s'est produite", "retry": "Réessayer", "save": "Enregistrer", "cancel": "Annuler", "delete": "Supprimer", "edit": "Modifier", "share": "Partager", "back": "Retour", "next": "Suivant", "done": "Terminé", "skip": "Passer" },
+  "nav": { "map": "Carte", "discover": "Découvrir", "purpose": "Occasion", "community": "Communauté", "profile": "Profil" },
+  "purpose": { "daily_eats": "Repas du quotidien", "good_value": "Bon rapport qualité-prix", "date_night": "Dîner en amoureux", "family_dinner": "Repas en famille", "late_night": "Repas tardif", "healthy_budget": "Sain & économique", "group_party": "Groupe & fête", "solo_dining": "Manger seul", "special_occasion": "Occasion spéciale" },
+  "restaurant": { "valueScore": "Score valeur", "reviews": "Avis", "menu": "Menu", "photos": "Photos", "directions": "Itinéraire", "hours": "Horaires", "open": "Ouvert", "closed": "Fermé", "verified": "Vérifié", "avgPrice": "Moy. {price}/pers.", "distance": "À {distance}", "noResults": "Aucun restaurant trouvé à proximité", "adjustFilters": "Ajustez vos filtres ou cherchez dans un autre quartier" },
+  "review": { "wasItWorthIt": "Ça valait le coup ?", "yesWorthIt": "Oui !", "notWorthIt": "Pas vraiment", "writeReview": "Écrire un avis", "pricePaid": "Combien avez-vous payé ?", "taste": "Goût", "portions": "Portions", "value": "Rapport qualité-prix", "submitReview": "Publier l'avis", "helpful": "Utile", "aiSummary": "Résumé IA" },
+  "price": { "under": "Moins de {amount}", "perPerson": "/pers.", "verified": "Prix vérifiés le {date}", "mayHaveChanged": "Les prix ont peut-être changé depuis le {date}" },
+  "budget": { "monthlyBudget": "Budget mensuel", "spent": "Dépensé ce mois", "remaining": "{amount} restant", "saved": "Vous avez économisé {amount} par rapport à la moyenne !" },
+  "auth": { "login": "Se connecter", "signup": "S'inscrire", "logout": "Se déconnecter", "continueWithGoogle": "Continuer avec Google", "continueWithApple": "Continuer avec Apple", "skipForNow": "Passer pour l'instant" },
+  "community": { "feed": "Communauté", "newPost": "Nouveau post", "tips": "Astuces", "deals": "Bons plans", "discussions": "Discussions" },
+  "freshness": { "recentlyVerified": "Récemment vérifié", "verified1to3": "Vérifié il y a 1-3 mois", "mayBeOutdated": "Peut-être obsolète", "unverified": "Non vérifié" },
+  "ads": { "sponsored": "Sponsorisé", "promoted": "Recommandé" },
+  "region": { "selectRegion": "Choisir une région", "selectLanguage": "Langue", "currentCity": "Ville actuelle", "allCities": "Toutes les villes" },
+  "chain": { "showAll": "Tout afficher", "hideChains": "Masquer les chaînes", "chainsHidden": "Chaînes masquées" }
+}

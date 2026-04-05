@@ -1,0 +1,15 @@
+{
+  "common": { "appName": "ValueBite", "search": "रेस्टोरेंट खोजें...", "nearby": "आस-पास", "trending": "ट्रेंडिंग", "seeAll": "सब देखें", "loading": "लोड हो रहा है...", "error": "कुछ गड़बड़ हो गई", "retry": "फिर से कोशिश करें", "save": "सेव करें", "cancel": "रद्द करें", "delete": "हटाएं", "edit": "बदलें", "share": "शेयर करें", "back": "वापस", "next": "अगला", "done": "हो गया", "skip": "छोड़ें" },
+  "nav": { "map": "मैप", "discover": "खोजें", "purpose": "मौका", "community": "समुदाय", "profile": "प्रोफ़ाइल" },
+  "purpose": { "daily_eats": "रोज़ का खाना", "good_value": "पैसा वसूल", "date_night": "डेट नाइट", "family_dinner": "फ़ैमिली डिनर", "late_night": "रात का खाना", "healthy_budget": "हेल्दी और सस्ता", "group_party": "ग्रुप और पार्टी", "solo_dining": "अकेले खाना", "special_occasion": "ख़ास मौका" },
+  "restaurant": { "valueScore": "वैल्यू स्कोर", "reviews": "रिव्यू", "menu": "मेन्यू", "photos": "फ़ोटो", "directions": "रास्ता", "hours": "समय", "open": "खुला है", "closed": "बंद है", "verified": "वेरिफ़ाइड", "avgPrice": "औसत {price}/व्यक्ति", "distance": "{distance} दूर", "noResults": "आस-पास कोई रेस्टोरेंट नहीं मिला", "adjustFilters": "फ़िल्टर बदलकर या किसी और इलाके में खोजकर देखें" },
+  "review": { "wasItWorthIt": "पैसा वसूल हुआ?", "yesWorthIt": "बिल्कुल!", "notWorthIt": "नहीं, ज़्यादा नहीं", "writeReview": "रिव्यू लिखें", "pricePaid": "कितना ख़र्च हुआ?", "taste": "स्वाद", "portions": "मात्रा", "value": "वैल्यू", "submitReview": "रिव्यू भेजें", "helpful": "मददगार", "aiSummary": "AI सारांश" },
+  "price": { "under": "{amount} से कम", "perPerson": "/व्यक्ति", "verified": "कीमतें {date} को वेरिफ़ाई की गईं", "mayHaveChanged": "कीमतें {date} के बाद बदल सकती हैं" },
+  "budget": { "monthlyBudget": "मासिक बजट", "spent": "इस महीने ख़र्च", "remaining": "{amount} बाकी", "saved": "आपने औसत से {amount} बचाए!" },
+  "auth": { "login": "लॉग इन", "signup": "साइन अप", "logout": "लॉग आउट", "continueWithGoogle": "Google से जारी रखें", "continueWithApple": "Apple से जारी रखें", "skipForNow": "अभी छोड़ें" },
+  "community": { "feed": "समुदाय", "newPost": "नई पोस्ट", "tips": "टिप्स", "deals": "डील्स", "discussions": "चर्चा" },
+  "freshness": { "recentlyVerified": "हाल ही में वेरिफ़ाइड", "verified1to3": "1-3 महीने पहले वेरिफ़ाइड", "mayBeOutdated": "पुरानी जानकारी हो सकती है", "unverified": "वेरिफ़ाइड नहीं" },
+  "ads": { "sponsored": "प्रायोजित", "promoted": "प्रमोटेड" },
+  "region": { "selectRegion": "क्षेत्र चुनें", "selectLanguage": "भाषा", "currentCity": "मौजूदा शहर", "allCities": "सभी शहर" },
+  "chain": { "showAll": "सब दिखाएं", "hideChains": "चेन छुपाएं", "chainsHidden": "चेन छुपी हुई हैं" }
+}

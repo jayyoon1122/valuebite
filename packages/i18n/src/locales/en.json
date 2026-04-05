@@ -1,0 +1,143 @@
+{
+  "common": {
+    "appName": "ValueBite",
+    "search": "Search restaurants...",
+    "nearby": "Nearby",
+    "trending": "Trending",
+    "seeAll": "See All",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Try Again",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "share": "Share",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done",
+    "skip": "Skip"
+  },
+  "nav": {
+    "map": "Map",
+    "discover": "Discover",
+    "purpose": "Purpose",
+    "community": "Community",
+    "profile": "Profile"
+  },
+  "purpose": {
+    "daily_eats": "Daily Eats",
+    "good_value": "Good Value",
+    "date_night": "Date Night",
+    "family_dinner": "Family Dinner",
+    "late_night": "Late Night",
+    "healthy_budget": "Healthy & Budget",
+    "group_party": "Group & Party",
+    "solo_dining": "Solo Dining",
+    "special_occasion": "Special Occasion"
+  },
+  "restaurant": {
+    "valueScore": "Value Score",
+    "reviews": "Reviews",
+    "menu": "Menu",
+    "photos": "Photos",
+    "directions": "Directions",
+    "call": "Call",
+    "website": "Website",
+    "hours": "Hours",
+    "open": "Open",
+    "closed": "Closed",
+    "openUntil": "Open until {time}",
+    "closedUntil": "Opens at {time}",
+    "verified": "Verified",
+    "avgPrice": "Avg. {price}/person",
+    "distance": "{distance} away",
+    "noResults": "No restaurants found nearby",
+    "adjustFilters": "Try adjusting your filters or search in a different area"
+  },
+  "review": {
+    "wasItWorthIt": "Was it worth it?",
+    "yesWorthIt": "Yes!",
+    "notWorthIt": "Not really",
+    "writeReview": "Write a Review",
+    "pricePaid": "How much did you pay?",
+    "whatDidYouOrder": "What did you order?",
+    "rateExperience": "Rate your experience",
+    "taste": "Taste",
+    "portions": "Portions",
+    "value": "Value",
+    "addPhotos": "Add Photos",
+    "submitReview": "Submit Review",
+    "helpful": "Helpful",
+    "aiSummary": "AI Summary"
+  },
+  "price": {
+    "under": "Under {amount}",
+    "range": "{min} - {max}",
+    "perPerson": "/person",
+    "verified": "Prices verified {date}",
+    "mayHaveChanged": "Prices may have changed since {date}",
+    "unverified": "Prices unverified",
+    "helpUpdate": "Help us update!"
+  },
+  "budget": {
+    "monthlyBudget": "Monthly Budget",
+    "spent": "Spent this month",
+    "remaining": "{amount} remaining",
+    "saved": "You saved {amount} vs. average!",
+    "overBudget": "Over budget by {amount}",
+    "logExpense": "Log Expense",
+    "setbudget": "Set Budget"
+  },
+  "auth": {
+    "login": "Log In",
+    "signup": "Sign Up",
+    "logout": "Log Out",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithApple": "Continue with Apple",
+    "orUseEmail": "or use email",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "skipForNow": "Skip for now"
+  },
+  "onboarding": {
+    "welcome": "Find amazing food at amazing prices",
+    "selectCountry": "Select Your Country",
+    "selectCity": "Select Your City",
+    "diningStyle": "What's Your Dining Style?",
+    "selectPurposes": "Choose the types of meals you're looking for",
+    "setBudget": "Monthly Dining Budget",
+    "budgetHelp": "We'll help you track spending and find the best value",
+    "getStarted": "Get Started",
+    "moreCitiesSoon": "More cities coming soon!"
+  },
+  "community": {
+    "feed": "Community",
+    "newPost": "New Post",
+    "tips": "Tips",
+    "deals": "Deals",
+    "discussions": "Discussions"
+  },
+  "freshness": {
+    "recentlyVerified": "Recently Verified",
+    "verified1to3": "Verified 1-3 months ago",
+    "mayBeOutdated": "May be outdated",
+    "unverified": "Unverified"
+  },
+  "ads": {
+    "sponsored": "Sponsored",
+    "promoted": "Featured"
+  },
+  "region": {
+    "selectRegion": "Select Region",
+    "selectLanguage": "Language",
+    "currentCity": "Current City",
+    "allCities": "All Cities"
+  },
+  "chain": {
+    "showAll": "Show All",
+    "hideChains": "Hide Chains",
+    "chainsHidden": "Chains Hidden"
+  }
+}

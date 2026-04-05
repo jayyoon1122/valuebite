@@ -1,0 +1,15 @@
+{
+  "common": { "appName": "ValueBite", "search": "搜尋餐廳...", "nearby": "附近", "trending": "熱門", "seeAll": "查看全部", "loading": "載入中...", "error": "發生錯誤了", "retry": "重試", "save": "儲存", "cancel": "取消", "delete": "刪除", "edit": "編輯", "share": "分享", "back": "返回", "next": "下一步", "done": "完成", "skip": "略過" },
+  "nav": { "map": "地圖", "discover": "探索", "purpose": "用途", "community": "社群", "profile": "個人檔案" },
+  "purpose": { "daily_eats": "日常用餐", "good_value": "高CP值", "date_night": "約會之夜", "family_dinner": "家庭聚餐", "late_night": "宵夜", "healthy_budget": "健康又省錢", "group_party": "聚會派對", "solo_dining": "一個人吃", "special_occasion": "特殊場合" },
+  "restaurant": { "valueScore": "CP值評分", "reviews": "評論", "menu": "菜單", "photos": "照片", "directions": "導航", "hours": "營業時間", "open": "營業中", "closed": "休息中", "verified": "已驗證", "avgPrice": "平均 {price}/人", "distance": "距離 {distance}", "noResults": "附近找不到餐廳", "adjustFilters": "試試調整篩選條件或搜尋其他區域" },
+  "review": { "wasItWorthIt": "值得嗎？", "yesWorthIt": "超值！", "notWorthIt": "還好", "writeReview": "寫評論", "pricePaid": "你花了多少？", "taste": "口味", "portions": "份量", "value": "CP值", "submitReview": "送出評論", "helpful": "有幫助", "aiSummary": "AI 摘要" },
+  "price": { "under": "{amount} 以下", "perPerson": "/人", "verified": "價格於 {date} 驗證", "mayHaveChanged": "價格自 {date} 後可能有變動" },
+  "budget": { "monthlyBudget": "每月預算", "spent": "本月已花費", "remaining": "還剩 {amount}", "saved": "你比平均省了 {amount}！" },
+  "auth": { "login": "登入", "signup": "註冊", "logout": "登出", "continueWithGoogle": "使用 Google 繼續", "continueWithApple": "使用 Apple 繼續", "skipForNow": "先跳過" },
+  "community": { "feed": "社群", "newPost": "發文", "tips": "小撇步", "deals": "優惠", "discussions": "討論" },
+  "freshness": { "recentlyVerified": "最近驗證", "verified1to3": "1-3 個月前驗證", "mayBeOutdated": "資訊可能過時", "unverified": "未驗證" },
+  "ads": { "sponsored": "贊助", "promoted": "推薦" },
+  "region": { "selectRegion": "選擇地區", "selectLanguage": "語言", "currentCity": "目前城市", "allCities": "所有城市" },
+  "chain": { "showAll": "全部顯示", "hideChains": "隱藏連鎖店", "chainsHidden": "已隱藏連鎖店" }
+}
