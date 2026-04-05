@@ -94,60 +94,72 @@ export default function CommunityPage() {
         </div>
       )}
 
-      {/* Post detail modal */}
+      {/* Post detail modal — fixed overlay that prevents background scroll */}
       {selectedPost && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center" onClick={() => setSelectedPost(null)}>
-          <div className="bg-[var(--vb-bg)] w-full max-w-lg rounded-t-2xl sm:rounded-2xl max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-4 border-b border-[var(--vb-border)]">
+        <div
+          className="fixed inset-0 z-[60] bg-black/50 overflow-hidden"
+          onClick={() => setSelectedPost(null)}
+          onTouchMove={(e) => e.stopPropagation()}
+        >
+          <div
+            className="absolute bottom-0 left-0 right-0 bg-[var(--vb-bg)] rounded-t-2xl sm:rounded-2xl sm:relative sm:top-1/2 sm:-translate-y-1/2 sm:max-w-lg sm:mx-auto max-h-[90vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Sticky header */}
+            <div className="flex items-center justify-between p-4 border-b border-[var(--vb-border)] shrink-0">
               <span className={`px-2 py-0.5 rounded text-xs font-semibold ${typeStyles[selectedPost.type]?.bg} ${typeStyles[selectedPost.type]?.text}`}>
                 {typeStyles[selectedPost.type]?.label}
               </span>
               <button onClick={() => setSelectedPost(null)} className="p-1"><X size={20} /></button>
             </div>
-            <div className="p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-full bg-[var(--vb-primary)] flex items-center justify-center text-white text-xs font-bold">{selectedPost.user?.charAt(0)}</div>
-                <div>
-                  <span className="text-sm font-medium">{selectedPost.user}</span>
-                  {selectedPost.userLevel >= 3 && <span className="ml-1 text-xs text-purple-500">Expert</span>}
-                  <p className="text-xs text-[var(--vb-text-secondary)]">{selectedPost.time}</p>
-                </div>
-              </div>
-              <h2 className="text-lg font-bold mb-3">{selectedPost.title}</h2>
-              <p className="text-sm leading-relaxed whitespace-pre-wrap">{selectedPost.content}</p>
-              <div className="flex items-center gap-6 mt-4 pt-3 border-t border-[var(--vb-border)] text-sm">
-                <button className="flex items-center gap-1.5 text-[var(--vb-text-secondary)] hover:text-[var(--vb-primary)]">
-                  <TrendingUp size={18} /> {selectedPost.upvotes} upvotes
-                </button>
-                <button className="flex items-center gap-1.5 text-[var(--vb-text-secondary)] hover:text-[var(--vb-primary)]">
-                  <MessageSquare size={18} /> {selectedPost.comments} comments
-                </button>
-              </div>
-              {/* Comments section */}
-              <div className="mt-4 space-y-3">
-                <h3 className="text-sm font-semibold">Comments</h3>
-                {[
-                  { user: 'FoodLover', text: 'Great tip! Thanks for sharing 🙏', time: '1h ago' },
-                  { user: 'BudgetDiner', text: 'Can confirm, this place is amazing for the price!', time: '3h ago' },
-                  { user: 'LocalGuide', text: 'Been going here for years. Consistency is key.', time: '5h ago' },
-                ].map((c, i) => (
-                  <div key={i} className="flex gap-2">
-                    <div className="w-6 h-6 rounded-full bg-[var(--vb-bg-secondary)] flex items-center justify-center text-xs font-bold shrink-0">{c.user.charAt(0)}</div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium">{c.user}</span>
-                        <span className="text-xs text-[var(--vb-text-secondary)]">{c.time}</span>
-                      </div>
-                      <p className="text-sm">{c.text}</p>
-                    </div>
+            {/* Scrollable content */}
+            <div className="overflow-y-auto flex-1 overscroll-contain">
+              <div className="p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-full bg-[var(--vb-primary)] flex items-center justify-center text-white text-xs font-bold">{selectedPost.user?.charAt(0)}</div>
+                  <div>
+                    <span className="text-sm font-medium">{selectedPost.user}</span>
+                    {selectedPost.userLevel >= 3 && <span className="ml-1 text-xs text-purple-500">Expert</span>}
+                    <p className="text-xs text-[var(--vb-text-secondary)]">{selectedPost.time}</p>
                   </div>
-                ))}
+                </div>
+                <h2 className="text-lg font-bold mb-3">{selectedPost.title}</h2>
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">{selectedPost.content}</p>
+                <div className="flex items-center gap-6 mt-4 pt-3 border-t border-[var(--vb-border)] text-sm">
+                  <button className="flex items-center gap-1.5 text-[var(--vb-text-secondary)] hover:text-[var(--vb-primary)]">
+                    <TrendingUp size={18} /> {selectedPost.upvotes}
+                  </button>
+                  <button className="flex items-center gap-1.5 text-[var(--vb-text-secondary)] hover:text-[var(--vb-primary)]">
+                    <MessageSquare size={18} /> {selectedPost.comments}
+                  </button>
+                </div>
+                {/* Just 1 comment — feels natural for a new app */}
+                {selectedPost.comments > 0 && (
+                  <div className="mt-4 space-y-3">
+                    <div className="flex gap-2">
+                      <div className="w-6 h-6 rounded-full bg-[var(--vb-bg-secondary)] flex items-center justify-center text-xs font-bold shrink-0">V</div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium">ValueBiter</span>
+                          <span className="text-xs text-[var(--vb-text-secondary)]">2h ago</span>
+                        </div>
+                        <p className="text-sm">Thanks for sharing! 👍</p>
+                      </div>
+                    </div>
+                    {selectedPost.comments > 5 && (
+                      <p className="text-xs text-[var(--vb-text-secondary)] text-center">View all {selectedPost.comments} comments</p>
+                    )}
+                  </div>
+                )}
               </div>
-              {/* Add comment */}
-              <div className="mt-4 flex gap-2">
+            </div>
+            {/* Sticky comment input */}
+            <div className="p-3 border-t border-[var(--vb-border)] shrink-0">
+              <div className="flex gap-2">
                 <input type="text" placeholder="Add a comment..." className="flex-1 px-3 py-2 rounded-lg bg-[var(--vb-bg-secondary)] border border-[var(--vb-border)] text-sm" />
                 <button className="px-4 py-2 bg-[var(--vb-primary)] text-white rounded-lg text-sm font-semibold">Post</button>
               </div>
+            </div>
             </div>
           </div>
         </div>
