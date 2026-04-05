@@ -160,7 +160,6 @@ export default function CommunityPage() {
                 <button className="px-4 py-2 bg-[var(--vb-primary)] text-white rounded-lg text-sm font-semibold">Post</button>
               </div>
             </div>
-            </div>
           </div>
         </div>
       )}
