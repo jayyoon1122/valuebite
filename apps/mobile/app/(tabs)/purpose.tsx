@@ -1,8 +1,8 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, SafeAreaView } from 'react-native';
 
 const PURPOSES = [
-  { key: 'daily_eats', icon: '🍱', label: 'Daily Eats', desc: 'Everyday meals', price: 'Under ¥1,000' },
-  { key: 'good_value', icon: '💰', label: 'Good Value', desc: 'Best bang for buck', price: 'Under ¥1,500' },
+  { key: 'daily_eats', icon: '🍛', label: 'Daily Eats', desc: 'Everyday meals', price: 'Under ¥1,000' },
+  { key: 'good_value', icon: '🍱', label: 'Good Value', desc: 'Best bang for buck', price: 'Under ¥1,500' },
   { key: 'date_night', icon: '🥂', label: 'Date Night', desc: 'Romantic + affordable', price: 'Under ¥2,500' },
   { key: 'family_dinner', icon: '👨‍👩‍👧‍👦', label: 'Family Dinner', desc: 'Kid-friendly, generous', price: 'Under ¥2,000' },
   { key: 'late_night', icon: '🌙', label: 'Late Night', desc: 'Open after 10pm', price: 'Under ¥1,200' },

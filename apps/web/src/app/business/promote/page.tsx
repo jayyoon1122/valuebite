@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { ArrowLeft, Megaphone, Target, Calendar, CreditCard } from 'lucide-react';
 
 const PURPOSE_OPTIONS = [
-  { key: 'daily_eats', label: 'Daily Eats', icon: '🍱' },
-  { key: 'good_value', label: 'Good Value', icon: '💰' },
+  { key: 'daily_eats', label: 'Daily Eats', icon: '🍛' },
+  { key: 'good_value', label: 'Good Value', icon: '🍱' },
   { key: 'late_night', label: 'Late Night', icon: '🌙' },
   { key: 'solo_dining', label: 'Solo Dining', icon: '🧑‍💻' },
   { key: 'family_dinner', label: 'Family Dinner', icon: '👨‍👩‍👧‍👦' },

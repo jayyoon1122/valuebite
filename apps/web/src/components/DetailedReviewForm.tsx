@@ -44,7 +44,7 @@ export function DetailedReviewForm({ restaurantId, restaurantName, currency = '�
   const [submitted, setSubmitted] = useState(false);
 
   const purposes = [
-    { key: 'daily_eats', label: 'Daily Eats', icon: '🍱' },
+    { key: 'daily_eats', label: 'Daily Eats', icon: '🍛' },
     { key: 'date_night', label: 'Date Night', icon: '🥂' },
     { key: 'family_dinner', label: 'Family', icon: '👨‍👩‍👧‍👦' },
     { key: 'late_night', label: 'Late Night', icon: '🌙' },

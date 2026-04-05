@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { BottomNav } from '@/components/BottomNav';
 import { SEED_POSTS } from '@/lib/seed-data';
-import { MessageSquare, TrendingUp, Plus } from 'lucide-react';
+import { MessageSquare, TrendingUp, Plus, X, Send } from 'lucide-react';
 
 const typeStyles: Record<string, { bg: string; text: string; label: string }> = {
   tip: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-300', label: 'Tip' },
@@ -13,6 +13,11 @@ const typeStyles: Record<string, { bg: string; text: string; label: string }> = 
 
 export default function CommunityPage() {
   const [activeTab, setActiveTab] = useState('All');
+  const [showPostForm, setShowPostForm] = useState(false);
+  const [postType, setPostType] = useState('tip');
+  const [postTitle, setPostTitle] = useState('');
+  const [postContent, setPostContent] = useState('');
+  const [postSubmitted, setPostSubmitted] = useState(false);
   const tabs = ['All', 'Tips', 'Deals', 'Discussions'];
 
   const filtered = activeTab === 'All'
@@ -24,7 +29,10 @@ export default function CommunityPage() {
       <header className="sticky top-0 z-40 bg-[var(--vb-bg)] border-b border-[var(--vb-border)]">
         <div className="flex items-center justify-between px-4 py-3">
           <h1 className="text-lg font-bold">Community</h1>
-          <button className="flex items-center gap-1 px-3 py-1.5 bg-[var(--vb-primary)] text-white rounded-full text-sm font-semibold">
+          <button
+            onClick={() => { setShowPostForm(true); setPostSubmitted(false); }}
+            className="flex items-center gap-1 px-3 py-1.5 bg-[var(--vb-primary)] text-white rounded-full text-sm font-semibold"
+          >
             <Plus size={16} /> Post
           </button>
         </div>
@@ -44,6 +52,46 @@ export default function CommunityPage() {
           ))}
         </div>
       </header>
+
+      {/* Post creation form */}
+      {showPostForm && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center">
+          <div className="bg-[var(--vb-bg)] w-full max-w-lg rounded-t-2xl sm:rounded-2xl max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-4 border-b border-[var(--vb-border)]">
+              <h2 className="font-semibold text-lg">New Post</h2>
+              <button onClick={() => setShowPostForm(false)} className="p-1 hover:bg-[var(--vb-bg-secondary)] rounded-lg"><X size={20} /></button>
+            </div>
+            {postSubmitted ? (
+              <div className="p-8 text-center">
+                <p className="text-3xl mb-3">🎉</p>
+                <p className="font-semibold text-lg">Post Published!</p>
+                <p className="text-sm text-[var(--vb-text-secondary)] mt-1">+10 contribution points earned</p>
+                <button onClick={() => setShowPostForm(false)} className="mt-4 px-6 py-2 bg-[var(--vb-primary)] text-white rounded-full text-sm font-semibold">Done</button>
+              </div>
+            ) : (
+              <div className="p-4 space-y-4">
+                <div>
+                  <label className="text-sm font-medium block mb-2">Post Type</label>
+                  <div className="flex gap-2">
+                    {[{ key: 'tip', label: 'Tip', color: 'blue' }, { key: 'deal', label: 'Deal', color: 'green' }, { key: 'discussion', label: 'Discussion', color: 'purple' }].map((t) => (
+                      <button key={t.key} onClick={() => setPostType(t.key)} className={`px-4 py-1.5 rounded-full text-sm font-medium transition ${postType === t.key ? `bg-${t.color}-500 text-white` : 'bg-[var(--vb-bg-secondary)] text-[var(--vb-text-secondary)]'}`}>{t.label}</button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium block mb-1">Title</label>
+                  <input type="text" value={postTitle} onChange={(e) => setPostTitle(e.target.value)} placeholder="What's your tip, deal, or question?" className="w-full px-3 py-2.5 rounded-lg bg-[var(--vb-bg-secondary)] border border-[var(--vb-border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--vb-primary)]" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium block mb-1">Details</label>
+                  <textarea value={postContent} onChange={(e) => setPostContent(e.target.value)} placeholder="Share the details..." rows={4} className="w-full px-3 py-2 rounded-lg bg-[var(--vb-bg-secondary)] border border-[var(--vb-border)] text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[var(--vb-primary)]" />
+                </div>
+                <button onClick={() => setPostSubmitted(true)} disabled={!postTitle.trim()} className="w-full py-3 rounded-xl bg-[var(--vb-primary)] text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50"><Send size={16} /> Publish Post</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="px-4 py-4 space-y-3 max-w-2xl mx-auto">
         {filtered.map((post) => {

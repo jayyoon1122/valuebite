@@ -8,7 +8,7 @@ interface Props {
 }
 
 const PURPOSE_INFO: Record<string, { label: string; icon: string }> = {
-  fitDailyEats: { label: 'Daily Eats', icon: '🍱' },
+  fitDailyEats: { label: 'Daily Eats', icon: '🍛' },
   fitDateNight: { label: 'Date Night', icon: '🥂' },
   fitFamilyDinner: { label: 'Family Dinner', icon: '👨‍👩‍👧‍👦' },
   fitLateNight: { label: 'Late Night', icon: '🌙' },

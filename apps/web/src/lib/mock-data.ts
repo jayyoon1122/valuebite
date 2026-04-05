@@ -53,8 +53,8 @@ export const MOCK_RESTAURANTS: RestaurantListItem[] = [
 ];
 
 export const MOCK_BRACKETS: PriceBracket[] = [
-  { id: 1, countryId: 1, purposeKey: 'daily_eats', purposeLabel: { en: 'Daily Eats', ja: '普段の食事' }, maxPrice: 1000, icon: '🍱', sortOrder: 0 },
-  { id: 2, countryId: 1, purposeKey: 'good_value', purposeLabel: { en: 'Good Value', ja: 'コスパ◎' }, maxPrice: 1500, icon: '💰', sortOrder: 1 },
+  { id: 1, countryId: 1, purposeKey: 'daily_eats', purposeLabel: { en: 'Daily Eats', ja: '普段の食事' }, maxPrice: 1000, icon: '🍛', sortOrder: 0 },
+  { id: 2, countryId: 1, purposeKey: 'good_value', purposeLabel: { en: 'Good Value', ja: 'コスパ◎' }, maxPrice: 1500, icon: '🍱', sortOrder: 1 },
   { id: 3, countryId: 1, purposeKey: 'date_night', purposeLabel: { en: 'Date Night', ja: 'デートの夜' }, maxPrice: 2500, icon: '🥂', sortOrder: 2 },
   { id: 4, countryId: 1, purposeKey: 'family_dinner', purposeLabel: { en: 'Family Dinner', ja: '家族ディナー' }, maxPrice: 2000, icon: '👨‍👩‍👧‍👦', sortOrder: 3 },
   { id: 5, countryId: 1, purposeKey: 'late_night', purposeLabel: { en: 'Late Night', ja: '夜食' }, maxPrice: 1200, icon: '🌙', sortOrder: 4 },

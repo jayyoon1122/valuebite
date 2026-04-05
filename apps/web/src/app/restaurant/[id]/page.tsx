@@ -188,6 +188,18 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
         {/* 1. Quick "Was it worth it?" — most likely user action */}
         <QuickRating restaurantId={id} currency={restaurant.priceCurrency === 'JPY' ? '¥' : restaurant.priceCurrency === 'USD' ? '$' : restaurant.priceCurrency === 'GBP' ? '£' : restaurant.priceCurrency === 'EUR' ? '€' : '$'} />
 
+        {/* 1.5. Share experience — right below quick rating */}
+        <button
+          onClick={() => setShowReviewForm(!showReviewForm)}
+          className="w-full py-2.5 rounded-xl border border-[var(--vb-border)] text-[var(--vb-text-secondary)] text-sm font-medium flex items-center justify-center gap-2 hover:border-[var(--vb-primary)] hover:text-[var(--vb-primary)] transition"
+        >
+          <PenLine size={16} /> Share your experience on ValueBite
+        </button>
+
+        {showReviewForm && (
+          <DetailedReviewForm restaurantId={id} restaurantName={name} currency={restaurant.priceCurrency === 'JPY' ? '¥' : '$'} onClose={() => setShowReviewForm(false)} />
+        )}
+
         {/* 2. Google Reviews — primary review source */}
         {googleData && (
           <GoogleReviewSection
@@ -212,17 +224,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
           </div>
         )}
 
-        {/* 4. Write Review — demoted to secondary action */}
-        <button
-          onClick={() => setShowReviewForm(!showReviewForm)}
-          className="w-full py-2.5 rounded-xl border border-[var(--vb-border)] text-[var(--vb-text-secondary)] text-sm font-medium flex items-center justify-center gap-2 hover:border-[var(--vb-primary)] hover:text-[var(--vb-primary)] transition"
-        >
-          <PenLine size={16} /> Share your experience on ValueBite
-        </button>
-
-        {showReviewForm && (
-          <DetailedReviewForm restaurantId={id} restaurantName={name} currency={restaurant.priceCurrency === 'JPY' ? '¥' : '$'} onClose={() => setShowReviewForm(false)} />
-        )}
+        {/* (Write review button moved above Google reviews) */}
 
         {/* Freshness */}
         <div className="text-center">

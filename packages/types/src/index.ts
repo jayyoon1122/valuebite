@@ -145,6 +145,7 @@ export interface RestaurantListItem {
   photoUrl?: string;
   distance?: number;
   purposeFit?: number;
+  isChain?: boolean;
   freshnessIndicator: FreshnessIndicator;
 }
 

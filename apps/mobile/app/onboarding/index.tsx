@@ -12,8 +12,8 @@ const COUNTRIES = [
 ];
 
 const PURPOSES = [
-  { key: 'daily_eats', icon: '🍱', label: 'Daily Eats' },
-  { key: 'good_value', icon: '💰', label: 'Good Value' },
+  { key: 'daily_eats', icon: '🍛', label: 'Daily Eats' },
+  { key: 'good_value', icon: '🍱', label: 'Good Value' },
   { key: 'date_night', icon: '🥂', label: 'Date Night' },
   { key: 'family_dinner', icon: '👨‍👩‍👧‍👦', label: 'Family Dinner' },
   { key: 'late_night', icon: '🌙', label: 'Late Night' },

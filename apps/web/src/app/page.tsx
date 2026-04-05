@@ -29,7 +29,7 @@ export default function HomePage() {
 
   // Chain filter
   if (!showChains) {
-    filtered = filtered.filter((r) => !(r as any).isChain);
+    filtered = filtered.filter((r) => !r.isChain);
   }
 
   // Build feed with interspersed ads

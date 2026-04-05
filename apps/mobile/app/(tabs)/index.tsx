@@ -4,8 +4,8 @@ import { StatusBar } from 'expo-status-bar';
 
 const PURPOSES = [
   { key: 'all', label: 'All', icon: '' },
-  { key: 'daily_eats', label: 'Daily Eats', icon: '🍱' },
-  { key: 'good_value', label: 'Good Value', icon: '💰' },
+  { key: 'daily_eats', label: 'Daily Eats', icon: '🍛' },
+  { key: 'good_value', label: 'Good Value', icon: '🍱' },
   { key: 'date_night', label: 'Date Night', icon: '🥂' },
   { key: 'late_night', label: 'Late Night', icon: '🌙' },
   { key: 'solo_dining', label: 'Solo', icon: '🧑‍💻' },

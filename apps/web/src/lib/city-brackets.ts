@@ -81,7 +81,7 @@ const PURPOSE_LABELS: Record<string, Record<string, string>> = {
 };
 
 const PURPOSE_ICONS: Record<string, string> = {
-  daily_eats: '🍱', good_value: '💰', date_night: '🥂', family_dinner: '👨‍👩‍👧‍👦',
+  daily_eats: '🍛', good_value: '🍱', date_night: '🥂', family_dinner: '👨‍👩‍👧‍👦',
   late_night: '🌙', healthy_budget: '🥗', group_party: '🎉', solo_dining: '🧑‍💻', special_occasion: '🎂',
 };
 
