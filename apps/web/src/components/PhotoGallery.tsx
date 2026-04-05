@@ -86,10 +86,12 @@ interface Props {
   cuisineTypes: string[];
   mainPhoto?: string;
   restaurantName: string;
+  realPhotos?: Array<{ url: string; label: string; color: string }> | null;
 }
 
-export function PhotoGallery({ cuisineTypes, mainPhoto, restaurantName }: Props) {
-  const photos = getPhotos(cuisineTypes, mainPhoto);
+export function PhotoGallery({ cuisineTypes, mainPhoto, restaurantName, realPhotos }: Props) {
+  // Use real Google photos if available, otherwise fall back to cuisine-based mock photos
+  const photos = (realPhotos && realPhotos.length > 0) ? realPhotos : getPhotos(cuisineTypes, mainPhoto);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
 

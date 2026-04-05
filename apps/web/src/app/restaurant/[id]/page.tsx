@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { formatPrice } from '@valuebite/utils';
 import { BottomNav } from '@/components/BottomNav';
@@ -14,7 +14,7 @@ import { GoogleReviewSection } from '@/components/GoogleReviewCard';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { PhotoGallery } from '@/components/PhotoGallery';
 import { SEED_REVIEWS, SEED_AI_SUMMARIES, SEED_MENUS } from '@/lib/seed-data';
-import { getRestaurantById, getReviewsForRestaurant, getAISummaryForRestaurant, getGoogleReviewsForRestaurant } from '@/lib/city-data';
+import { getRestaurantById, getReviewsForRestaurant, getAISummaryForRestaurant, getGoogleReviewsForRestaurant, fetchRealRestaurantDetail } from '@/lib/city-data';
 import {
   ArrowLeft, MapPin, MessageSquare, Sparkles, PenLine, ExternalLink,
 } from 'lucide-react';
@@ -48,8 +48,36 @@ const DEFAULT_SUMMARY = {
 
 export default function RestaurantPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const restaurant = getRestaurantById(id);
+  const seedRestaurant = getRestaurantById(id);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [realPhotos, setRealPhotos] = useState<any[] | null>(null);
+  const [realGoogleReviews, setRealGoogleReviews] = useState<any | null>(null);
+  const [dbRestaurant, setDbRestaurant] = useState<any | null>(null);
+  const [loading, setLoading] = useState(!seedRestaurant); // only show loading if no seed data
+
+  // Load real data from Supabase
+  useEffect(() => {
+    fetchRealRestaurantDetail(id).then((data) => {
+      if (data) {
+        setDbRestaurant(data);
+        if (data.photos && data.photos.length > 0) setRealPhotos(data.photos);
+        if (data.googleReviews && data.googleReviews.reviews.length > 0) setRealGoogleReviews(data.googleReviews);
+      }
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [id]);
+
+  // Use seed data or DB data
+  const restaurant = seedRestaurant || dbRestaurant;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center pb-20">
+        <div className="animate-pulse text-[var(--vb-text-secondary)]">Loading...</div>
+        <BottomNav />
+      </div>
+    );
+  }
 
   if (!restaurant) {
     return (
@@ -88,6 +116,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
         cuisineTypes={restaurant.cuisineType || []}
         mainPhoto={restaurant.photoUrl}
         restaurantName={name}
+        realPhotos={realPhotos}
       />
 
       <div className="px-4 py-4 space-y-4">
@@ -200,12 +229,12 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
           <DetailedReviewForm restaurantId={id} restaurantName={name} currency={restaurant.priceCurrency === 'JPY' ? '¥' : '$'} onClose={() => setShowReviewForm(false)} />
         )}
 
-        {/* 2. Google Reviews — primary review source */}
-        {googleData && (
+        {/* 2. Google Reviews — primary review source (real from Supabase or seed) */}
+        {(realGoogleReviews || googleData) && (
           <GoogleReviewSection
-            reviews={googleData.reviews}
-            totalCount={googleData.totalReviews}
-            avgRating={googleData.avgRating}
+            reviews={(realGoogleReviews || googleData).reviews}
+            totalCount={(realGoogleReviews || googleData).totalReviews}
+            avgRating={(realGoogleReviews || googleData).avgRating}
           />
         )}
 

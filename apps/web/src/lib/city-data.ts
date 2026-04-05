@@ -1,11 +1,10 @@
 /**
- * City data router — returns restaurants, reviews, Google reviews, and summaries for any city
+ * City data router — hybrid: seed data + Supabase real data
  */
 
 import type { RestaurantListItem } from '@valuebite/types';
 import { SEED_RESTAURANTS, SEED_REVIEWS, SEED_AI_SUMMARIES } from './seed-data';
 
-// Cached data
 let cachedCityData: Record<string, RestaurantListItem[]> = {};
 let cachedCityReviews: any[] = [];
 let cachedCitySummaries: Record<string, any> = {};
@@ -14,19 +13,9 @@ let cityDataLoaded = false;
 
 function ensureCityData() {
   if (cityDataLoaded) return;
-  try {
-    const cityMod = require('./seed-cities');
-    if (cityMod.CITY_RESTAURANTS) cachedCityData = cityMod.CITY_RESTAURANTS;
-  } catch {}
-  try {
-    const reviewMod = require('./seed-city-reviews');
-    if (reviewMod.CITY_REVIEWS) cachedCityReviews = reviewMod.CITY_REVIEWS;
-    if (reviewMod.CITY_AI_SUMMARIES) cachedCitySummaries = reviewMod.CITY_AI_SUMMARIES;
-  } catch {}
-  try {
-    const googleMod = require('./seed-google-reviews');
-    if (googleMod.GOOGLE_REVIEWS) cachedGoogleReviews = googleMod.GOOGLE_REVIEWS;
-  } catch {}
+  try { const m = require('./seed-cities'); if (m.CITY_RESTAURANTS) cachedCityData = m.CITY_RESTAURANTS; } catch {}
+  try { const m = require('./seed-city-reviews'); if (m.CITY_REVIEWS) cachedCityReviews = m.CITY_REVIEWS; if (m.CITY_AI_SUMMARIES) cachedCitySummaries = m.CITY_AI_SUMMARIES; } catch {}
+  try { const m = require('./seed-google-reviews'); if (m.GOOGLE_REVIEWS) cachedGoogleReviews = m.GOOGLE_REVIEWS; } catch {}
   cityDataLoaded = true;
 }
 
@@ -60,14 +49,27 @@ export function getAISummaryForRestaurant(restaurantId: string): any | null {
   return cachedCitySummaries[restaurantId] || null;
 }
 
-/**
- * Get Google reviews for a restaurant (primary review source)
- */
-export function getGoogleReviewsForRestaurant(restaurantId: string): {
-  totalReviews: number;
-  avgRating: number;
-  reviews: Array<{ author: string; rating: number; text: string; timeAgo: string }>;
-} | null {
+export function getGoogleReviewsForRestaurant(restaurantId: string): any | null {
   ensureCityData();
   return cachedGoogleReviews[restaurantId] || null;
+}
+
+// ===== Async: fetch real data from Supabase =====
+
+export async function fetchRealRestaurants(lat: number, lng: number): Promise<any[]> {
+  try {
+    const res = await fetch(`/api/restaurants/nearby?lat=${lat}&lng=${lng}&radius=10`);
+    const data = await res.json();
+    if (data.success) return data.data;
+  } catch {}
+  return [];
+}
+
+export async function fetchRealRestaurantDetail(id: string): Promise<any | null> {
+  try {
+    const res = await fetch(`/api/restaurants/${id}`);
+    const data = await res.json();
+    if (data.success) return data.data;
+  } catch {}
+  return null;
 }

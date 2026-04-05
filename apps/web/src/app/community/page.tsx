@@ -241,7 +241,7 @@ export default function CommunityPage() {
                   <ArrowUp size={16} /> {post.upvotes + (isUpvoted ? 1 : 0)}
                 </button>
                 <span className="flex items-center gap-1 text-[var(--vb-text-secondary)]">
-                  <MessageSquare size={16} /> {post.comments}
+                  <MessageSquare size={16} /> {getComments(post.id).length}
                 </span>
               </div>
             </div>
