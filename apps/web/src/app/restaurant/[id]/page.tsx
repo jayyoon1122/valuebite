@@ -89,13 +89,24 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
   const currencyMap: Record<string, string> = { JPY: 'JP', USD: 'US', GBP: 'GB', EUR: 'DE', AUD: 'AU', SGD: 'SG', AED: 'AE', TWD: 'TW', HKD: 'HK', CAD: 'CA', CHF: 'CH', CZK: 'CZ', HUF: 'HU', PLN: 'PL', TRY: 'TR', ILS: 'IL', INR: 'IN', MXN: 'MX' };
   const priceCountry = currencyMap[restaurant.priceCurrency || 'JPY'] || 'JP';
   const price = restaurant.avgMealPrice ? formatPrice(restaurant.avgMealPrice, priceCountry) : '';
-  const userReviews: any[] = []; // No more seed reviews
+  const userReviews: any[] = [];
   const googleData = realGoogleReviews;
   const aiSummary = DEFAULT_SUMMARY;
-  const menu = DEFAULT_MENU; // Menu comes from AI photo analysis in production
+  const [menuItems, setMenuItems] = useState<any[]>([]);
   const purposeFits = DEFAULT_PURPOSE_FITS[id] || DEFAULT_FITS;
-  // Use real review count from DB, or Google reviews count, or seed reviews
-  const totalReviewCount = (realGoogleReviews?.totalReviews || 0) || (googleData?.totalReviews || 0) || (dbRestaurant?.totalReviews || 0) || userReviews.length;
+  const totalReviewCount = (realGoogleReviews?.totalReviews || 0) || restaurant?.totalReviews || 0;
+
+  // Load menu items from DB
+  useEffect(() => {
+    fetch(`/api/menu-analyze?restaurantId=${id}`)
+      .then(r => r.json())
+      .then(d => { if (d.success && d.data?.length > 0) setMenuItems(d.data); })
+      .catch(() => {});
+  }, [id]);
+
+  const menu = menuItems.length > 0
+    ? menuItems.map((item: any) => ({ name: item.name, price: item.price, category: item.category }))
+    : DEFAULT_MENU;
 
   return (
     <div className="min-h-screen pb-20">
