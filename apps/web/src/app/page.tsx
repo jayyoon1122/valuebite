@@ -33,8 +33,8 @@ export default function HomePage() {
       .catch(() => {});
   }, [userLat, userLng]);
 
-  // Use DB restaurants if available, otherwise seed data
-  const allRestaurants = dbRestaurants.length > 0 ? dbRestaurants : seedRestaurants;
+  // Use whichever source has more data (DB or seed)
+  const allRestaurants = dbRestaurants.length > seedRestaurants.length ? dbRestaurants : (seedRestaurants.length > 0 ? seedRestaurants : dbRestaurants);
   const hasData = allRestaurants.length > 0;
 
   let filtered = selectedPurpose
