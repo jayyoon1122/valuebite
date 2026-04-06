@@ -10,7 +10,6 @@ import { NativeAdCard } from '@/components/NativeAdCard';
 import { MapView } from '@/components/MapView';
 import { PriceAlertBanner } from '@/components/PriceAlertBanner';
 import { useAppStore } from '@/lib/store';
-import { getRestaurantsForCity } from '@/lib/city-data';
 import { FEED_ADS, getNextFeedAd } from '@/lib/mock-ads';
 import { MapPin } from 'lucide-react';
 
@@ -22,19 +21,21 @@ export default function HomePage() {
   const { isMapView, userLat, userLng, selectedPurpose, countryCode, showChains, cityId, cityName } = useAppStore();
   const [sheetExpanded, setSheetExpanded] = useState(false);
 
-  const seedRestaurants = getRestaurantsForCity(cityId || 'tokyo');
-  const [dbRestaurants, setDbRestaurants] = useState<any[]>([]);
+  const [allRestaurants, setAllRestaurants] = useState<any[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
 
-  // Fetch real restaurants from Supabase
+  // Fetch real restaurants from Supabase — NO seed data
   useEffect(() => {
+    setLoadingData(true);
     fetch(`/api/restaurants/nearby?lat=${userLat}&lng=${userLng}&radius=15`)
       .then(r => r.json())
-      .then(d => { if (d.success && d.data?.length > 0) setDbRestaurants(d.data); })
-      .catch(() => {});
+      .then(d => {
+        if (d.success && d.data) setAllRestaurants(d.data);
+        setLoadingData(false);
+      })
+      .catch(() => setLoadingData(false));
   }, [userLat, userLng]);
 
-  // Use whichever source has more data (DB or seed)
-  const allRestaurants = dbRestaurants.length > seedRestaurants.length ? dbRestaurants : (seedRestaurants.length > 0 ? seedRestaurants : dbRestaurants);
   const hasData = allRestaurants.length > 0;
 
   let filtered = selectedPurpose

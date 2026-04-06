@@ -13,8 +13,7 @@ import { ReviewCard } from '@/components/ReviewCard';
 import { GoogleReviewSection } from '@/components/GoogleReviewCard';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { PhotoGallery } from '@/components/PhotoGallery';
-import { SEED_REVIEWS, SEED_AI_SUMMARIES, SEED_MENUS } from '@/lib/seed-data';
-import { getRestaurantById, getReviewsForRestaurant, getAISummaryForRestaurant, getGoogleReviewsForRestaurant, fetchRealRestaurantDetail } from '@/lib/city-data';
+import { fetchRealRestaurantDetail } from '@/lib/city-data';
 import {
   ArrowLeft, MapPin, MessageSquare, Sparkles, PenLine, ExternalLink,
 } from 'lucide-react';
@@ -48,27 +47,24 @@ const DEFAULT_SUMMARY = {
 
 export default function RestaurantPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const seedRestaurant = getRestaurantById(id);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [realPhotos, setRealPhotos] = useState<any[] | null>(null);
   const [realGoogleReviews, setRealGoogleReviews] = useState<any | null>(null);
-  const [dbRestaurant, setDbRestaurant] = useState<any | null>(null);
-  const [loading, setLoading] = useState(!seedRestaurant); // only show loading if no seed data
+  const [restaurant, setRestaurant] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Load real data from Supabase
+  // Load ALL data from Supabase — no seed data
   useEffect(() => {
+    setLoading(true);
     fetchRealRestaurantDetail(id).then((data) => {
       if (data) {
-        setDbRestaurant(data);
+        setRestaurant(data);
         if (data.photos && data.photos.length > 0) setRealPhotos(data.photos);
         if (data.googleReviews && data.googleReviews.reviews.length > 0) setRealGoogleReviews(data.googleReviews);
       }
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [id]);
-
-  // Use seed data or DB data
-  const restaurant = seedRestaurant || dbRestaurant;
 
   if (loading) {
     return (
@@ -89,14 +85,14 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
     );
   }
 
-  const name = restaurant.name.en || restaurant.name.original || '';
+  const name = restaurant.name?.en || restaurant.name?.original || '';
   const currencyMap: Record<string, string> = { JPY: 'JP', USD: 'US', GBP: 'GB', EUR: 'DE', AUD: 'AU', SGD: 'SG', AED: 'AE', TWD: 'TW', HKD: 'HK', CAD: 'CA', CHF: 'CH', CZK: 'CZ', HUF: 'HU', PLN: 'PL', TRY: 'TR', ILS: 'IL', INR: 'IN', MXN: 'MX' };
   const priceCountry = currencyMap[restaurant.priceCurrency || 'JPY'] || 'JP';
   const price = restaurant.avgMealPrice ? formatPrice(restaurant.avgMealPrice, priceCountry) : '';
-  const userReviews = getReviewsForRestaurant(id);
-  const googleData = getGoogleReviewsForRestaurant(id);
-  const aiSummary = getAISummaryForRestaurant(id) || DEFAULT_SUMMARY;
-  const menu = SEED_MENUS[id] || DEFAULT_MENU;
+  const userReviews: any[] = []; // No more seed reviews
+  const googleData = realGoogleReviews;
+  const aiSummary = DEFAULT_SUMMARY;
+  const menu = DEFAULT_MENU; // Menu comes from AI photo analysis in production
   const purposeFits = DEFAULT_PURPOSE_FITS[id] || DEFAULT_FITS;
   // Use real review count from DB, or Google reviews count, or seed reviews
   const totalReviewCount = (realGoogleReviews?.totalReviews || 0) || (googleData?.totalReviews || 0) || (dbRestaurant?.totalReviews || 0) || userReviews.length;
