@@ -1,0 +1,7 @@
+scripts/
+MASTER_PROMPT.md
+SETUP_GUIDES.md
+APP_STORE_LISTING.md
+IMPROVEMENTS_TODO.md
+supabase/
+docker-compose.yml
