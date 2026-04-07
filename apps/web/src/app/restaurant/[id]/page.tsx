@@ -60,6 +60,9 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
   }
 
   const name = restaurant.name?.en || restaurant.name?.original || '';
+  const address = typeof restaurant.address === 'object' && restaurant.address
+    ? (restaurant.address.en || restaurant.address.original || '')
+    : (restaurant.address || '');
   const currencyMap: Record<string, string> = { JPY: 'JP', USD: 'US', GBP: 'GB', EUR: 'DE', AUD: 'AU', SGD: 'SG', AED: 'AE', TWD: 'TW', HKD: 'HK', CAD: 'CA', CHF: 'CH', CZK: 'CZ', HUF: 'HU', PLN: 'PL', TRY: 'TR', ILS: 'IL', INR: 'IN', MXN: 'MX' };
   const priceCountry = currencyMap[restaurant.priceCurrency || 'JPY'] || 'JP';
   const price = restaurant.avgMealPrice ? formatPrice(restaurant.avgMealPrice, priceCountry) : '';
@@ -140,9 +143,34 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
             <h3 className="font-semibold text-sm flex items-center gap-2 mb-1">
               <Clock size={16} /> Hours
             </h3>
-            <p className="text-sm text-[var(--vb-text-secondary)]">
-              {restaurant.is24h ? 'Open 24 hours' : (restaurant.operatingHours || 'Hours not available')}
-            </p>
+            {restaurant.is24h ? (
+              <p className="text-sm text-[var(--vb-text-secondary)]">Open 24 hours</p>
+            ) : typeof restaurant.operatingHours === 'string' ? (
+              <p className="text-sm text-[var(--vb-text-secondary)]">{restaurant.operatingHours}</p>
+            ) : restaurant.operatingHours && typeof restaurant.operatingHours === 'object' ? (
+              <div className="text-sm text-[var(--vb-text-secondary)] space-y-0.5">
+                {(() => {
+                  const hours = restaurant.operatingHours as Record<string, any>;
+                  const dayOrder = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+                  const entries = dayOrder
+                    .filter(d => hours[d] != null)
+                    .map(d => {
+                      const val = hours[d];
+                      const text = typeof val === 'string' ? val
+                        : typeof val === 'object' && val?.open && val?.close ? `${val.open} - ${val.close}`
+                        : JSON.stringify(val);
+                      return { day: d, text };
+                    });
+                  if (entries.length === 0) return <p>Hours vary</p>;
+                  return entries.map(({ day, text }) => (
+                    <div key={day} className="flex justify-between">
+                      <span className="capitalize font-medium w-10">{day}</span>
+                      <span>{text}</span>
+                    </div>
+                  ));
+                })()}
+              </div>
+            ) : null}
           </div>
         )}
 
@@ -166,9 +194,9 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
         </div>
 
         {/* Address */}
-        {restaurant.address && (
+        {address && (
           <p className="text-sm text-[var(--vb-text-secondary)]">
-            <MapPin size={12} className="inline mr-1" />{restaurant.address}
+            <MapPin size={12} className="inline mr-1" />{address}
           </p>
         )}
 
