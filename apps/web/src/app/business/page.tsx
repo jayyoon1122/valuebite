@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { BarChart3, Megaphone, Store, TrendingUp, Eye, MousePointer, Users } from 'lucide-react';
 
-const MOCK_STATS = {
+const DEMO_STATS = {
   views: 1247,
   clicks: 89,
   favorites: 23,
@@ -33,10 +33,10 @@ export default function BusinessPortal() {
         {/* Quick stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { icon: Eye, label: 'Views (30d)', value: MOCK_STATS.views.toLocaleString(), color: 'text-blue-500' },
-            { icon: MousePointer, label: 'Clicks (30d)', value: MOCK_STATS.clicks.toString(), color: 'text-green-500' },
-            { icon: Users, label: 'Favorites', value: MOCK_STATS.favorites.toString(), color: 'text-red-500' },
-            { icon: TrendingUp, label: 'Avg Rating', value: MOCK_STATS.avgRating.toString(), color: 'text-yellow-500' },
+            { icon: Eye, label: 'Views (30d)', value: DEMO_STATS.views.toLocaleString(), color: 'text-blue-500' },
+            { icon: MousePointer, label: 'Clicks (30d)', value: DEMO_STATS.clicks.toString(), color: 'text-green-500' },
+            { icon: Users, label: 'Favorites', value: DEMO_STATS.favorites.toString(), color: 'text-red-500' },
+            { icon: TrendingUp, label: 'Avg Rating', value: DEMO_STATS.avgRating.toString(), color: 'text-yellow-500' },
           ].map(({ icon: Icon, label, value, color }) => (
             <div key={label} className="bg-[var(--vb-bg-secondary)] rounded-xl p-4">
               <Icon size={20} className={color} />
@@ -58,7 +58,7 @@ export default function BusinessPortal() {
             </Link>
           </div>
           <div className="space-y-3">
-            {MOCK_STATS.campaigns.map((campaign) => (
+            {DEMO_STATS.campaigns.map((campaign) => (
               <div key={campaign.id} className="bg-[var(--vb-bg-secondary)] rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-semibold">{campaign.name}</h3>

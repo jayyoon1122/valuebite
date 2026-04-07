@@ -19,7 +19,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const [restaurants, reviews, photos] = await Promise.all([
       supaFetch(`restaurants?id=eq.${id}&select=*&limit=1`),
       supaFetch(`reviews?restaurant_id=eq.${id}&select=*&order=created_at.desc&limit=10`),
-      supaFetch(`menu_photos?restaurant_id=eq.${id}&select=*&limit=5`),
+      supaFetch(`menu_photos?restaurant_id=eq.${id}&select=*&limit=15`),
     ]);
 
     if (!restaurants || restaurants.length === 0) {

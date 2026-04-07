@@ -4,8 +4,7 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ffnxyafohn
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || '';
 
 /**
- * Search for restaurant photos by name
- * Used for seed data restaurants that don't have Supabase UUIDs
+ * Search for restaurant photos by name and location
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

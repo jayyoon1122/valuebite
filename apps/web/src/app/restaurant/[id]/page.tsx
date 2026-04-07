@@ -233,7 +233,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
           <DetailedReviewForm restaurantId={id} restaurantName={name} currency={restaurant.priceCurrency === 'JPY' ? '¥' : '$'} onClose={() => setShowReviewForm(false)} />
         )}
 
-        {/* 2. Google Reviews — primary review source (real from Supabase or seed) */}
+        {/* 2. Google Reviews — primary review source from Supabase */}
         {(realGoogleReviews || googleData) && (
           <GoogleReviewSection
             reviews={(realGoogleReviews || googleData).reviews}

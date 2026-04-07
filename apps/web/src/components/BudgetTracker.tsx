@@ -17,21 +17,13 @@ interface Expense {
   purpose?: string;
 }
 
-// Mock data
-const MOCK_EXPENSES: Expense[] = [
-  { id: '1', restaurant: 'Matsuya Shinjuku', amount: 450, date: '2026-04-05', purpose: 'daily_eats' },
-  { id: '2', restaurant: 'Yayoiken Shibuya', amount: 780, date: '2026-04-04', purpose: 'daily_eats' },
-  { id: '3', restaurant: 'Saizeriya', amount: 650, date: '2026-04-03', purpose: 'family_dinner' },
-  { id: '4', restaurant: 'CoCo Curry', amount: 750, date: '2026-04-02', purpose: 'solo_dining' },
-  { id: '5', restaurant: 'Hidakaya', amount: 490, date: '2026-04-01', purpose: 'late_night' },
-];
 
 export function BudgetTracker({ countryCode = 'JP', currency = '¥' }: Props) {
   const [budget, setBudget] = useState(30000); // ¥30,000/month
   const [showLogForm, setShowLogForm] = useState(false);
   const [logAmount, setLogAmount] = useState('');
   const [logRestaurant, setLogRestaurant] = useState('');
-  const [expenses] = useState(MOCK_EXPENSES);
+  const [expenses] = useState<Expense[]>([]);
 
   const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
   const remaining = budget - totalSpent;

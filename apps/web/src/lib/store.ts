@@ -51,6 +51,8 @@ function persistState(state: Partial<AppState>) {
       countryCode: state.countryCode,
       cityId: state.cityId,
       cityName: state.cityName,
+      userLat: state.userLat,
+      userLng: state.userLng,
       showChains: state.showChains,
       darkMode: state.darkMode,
     };
@@ -61,10 +63,13 @@ function persistState(state: Partial<AppState>) {
 const persisted = loadPersistedState();
 
 export const useAppStore = create<AppState>((set, get) => ({
-  // Default to Tokyo
-  userLat: 35.6762,
-  userLng: 139.6503,
-  setUserLocation: (lat, lng) => set({ userLat: lat, userLng: lng }),
+  // Default to Tokyo, but restore from persisted prefs if available
+  userLat: persisted.userLat || 35.6762,
+  userLng: persisted.userLng || 139.6503,
+  setUserLocation: (lat, lng) => {
+    set({ userLat: lat, userLng: lng });
+    persistState({ ...get(), userLat: lat, userLng: lng });
+  },
 
   // Region & Language
   locale: persisted.locale || 'en',

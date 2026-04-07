@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { BottomNav } from '@/components/BottomNav';
-// Community posts — will come from Supabase when user auth is implemented
-const POSTS = [
+// Community posts — will be fetched from Supabase when user auth is implemented
+const SAMPLE_POSTS = [
   { id: 'p1', type: 'tip', user: 'TokyoFoodie', userLevel: 3, title: 'Top 5 lunch spots under ¥500 near Shinjuku Station', content: 'After 6 months of daily exploration, here are my top picks for budget lunches near Shinjuku.', upvotes: 156, comments: 1, time: '2h ago' },
   { id: 'p2', type: 'deal', user: 'DealHunter', userLevel: 2, title: 'Saizeriya added a ¥299 pasta', content: 'The new peperoncino pasta at Saizeriya is only ¥299 (tax included). Best deal in Tokyo.', upvotes: 234, comments: 1, time: '5h ago' },
   { id: 'p3', type: 'discussion', user: 'RamenHunter', userLevel: 2, title: 'Is Ichiran worth ¥1,000+ when Hidakaya exists at ¥490?', content: 'Genuine question about value vs taste. What do you all think?', upvotes: 89, comments: 2, time: '8h ago' },
@@ -18,8 +18,8 @@ const typeStyles: Record<string, { bg: string; text: string; label: string }> = 
   discussion: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-300', label: 'Discussion' },
 };
 
-// Mock comments per post (vary by post)
-const MOCK_COMMENTS: Record<string, Array<{ user: string; text: string; time: string }>> = {
+// Sample comments — will be fetched from Supabase when community features launch
+const SAMPLE_COMMENTS: Record<string, Array<{ user: string; text: string; time: string }>> = {
   p1: [{ user: 'SobaFan', text: 'Fuji Soba is my go-to!', time: '1h ago' }],
   p2: [{ user: 'PastaLover', text: 'Just tried it, amazing deal!', time: '3h ago' }],
   p3: [{ user: 'RamenFan', text: 'Hidakaya is underrated honestly', time: '4h ago' }, { user: 'TokyoLocal', text: 'Ichiran has the vibe though', time: '2h ago' }],
@@ -41,8 +41,8 @@ export default function CommunityPage() {
   const tabs = ['All', 'Tips', 'Deals', 'Discussions'];
 
   const filtered = activeTab === 'All'
-    ? POSTS
-    : POSTS.filter((p) => p.type === activeTab.toLowerCase().replace('s', ''));
+    ? SAMPLE_POSTS
+    : SAMPLE_POSTS.filter((p) => p.type === activeTab.toLowerCase().replace('s', ''));
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -65,7 +65,7 @@ export default function CommunityPage() {
   };
 
   const getComments = (postId: string) => {
-    const mock = MOCK_COMMENTS[postId] || [];
+    const mock = SAMPLE_COMMENTS[postId] || [];
     const local = localComments[postId] || [];
     return [...mock, ...local];
   };

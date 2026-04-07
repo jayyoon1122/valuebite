@@ -1,7 +1,7 @@
 'use client';
 
 import { ExternalLink, MoreHorizontal } from 'lucide-react';
-import type { NativeAdData } from '@/lib/mock-ads';
+import type { NativeAdData } from '@/lib/ad-placements';
 
 interface Props {
   ad: NativeAdData;

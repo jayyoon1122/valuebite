@@ -1,7 +1,6 @@
 /**
- * Ad placements simulating Google AdMob + Meta Audience Network
- * In production, these would be served by the AdMob/Meta SDKs
- * Instagram-style native ads that blend with the feed
+ * Ad placement templates for Google AdMob + Meta Audience Network
+ * In production, content will be served by the AdMob/Meta SDKs.
  */
 
 export interface NativeAdData {

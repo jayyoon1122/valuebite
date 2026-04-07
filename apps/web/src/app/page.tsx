@@ -10,7 +10,7 @@ import { NativeAdCard } from '@/components/NativeAdCard';
 import { MapView } from '@/components/MapView';
 import { PriceAlertBanner } from '@/components/PriceAlertBanner';
 import { useAppStore } from '@/lib/store';
-import { FEED_ADS, getNextFeedAd } from '@/lib/mock-ads';
+import { FEED_ADS, getNextFeedAd } from '@/lib/ad-placements';
 import { fetchNearbyRestaurants } from '@/lib/data';
 import { MapPin, Loader2 } from 'lucide-react';
 
