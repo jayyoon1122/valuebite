@@ -2,7 +2,7 @@
   "name": "valuebite",
   "private": true,
   "workspaces": [
-    "apps/*",
+    "apps/web",
     "packages/*"
   ],
   "scripts": {
