@@ -13,7 +13,7 @@ import { ReviewCard } from '@/components/ReviewCard';
 import { GoogleReviewSection } from '@/components/GoogleReviewCard';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { PhotoGallery } from '@/components/PhotoGallery';
-import { fetchRealRestaurantDetail } from '@/lib/city-data';
+import { fetchRestaurantDetail, fetchMenuItems } from '@/lib/data';
 import {
   ArrowLeft, MapPin, MessageSquare, Sparkles, PenLine, ExternalLink,
 } from 'lucide-react';
@@ -54,25 +54,21 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
   const [loading, setLoading] = useState(true);
   const [menuItems, setMenuItems] = useState<any[]>([]);
 
-  // Load ALL data from Supabase
+  // Load ALL data from Supabase — single source of truth
   useEffect(() => {
     setLoading(true);
-    fetchRealRestaurantDetail(id).then((data) => {
+    Promise.all([
+      fetchRestaurantDetail(id),
+      fetchMenuItems(id),
+    ]).then(([data, menu]) => {
       if (data) {
         setRestaurant(data);
-        if (data.photos && data.photos.length > 0) setRealPhotos(data.photos);
-        if (data.googleReviews && data.googleReviews.reviews.length > 0) setRealGoogleReviews(data.googleReviews);
+        if (data.photos?.length > 0) setRealPhotos(data.photos);
+        if (data.googleReviews?.reviews?.length > 0) setRealGoogleReviews(data.googleReviews);
       }
+      if (menu?.length > 0) setMenuItems(menu);
       setLoading(false);
     }).catch(() => setLoading(false));
-  }, [id]);
-
-  // Load menu items from DB
-  useEffect(() => {
-    fetch(`/api/menu-analyze?restaurantId=${id}`)
-      .then(r => r.json())
-      .then(d => { if (d.success && d.data?.length > 0) setMenuItems(d.data); })
-      .catch(() => {});
   }, [id]);
 
   if (loading) {
