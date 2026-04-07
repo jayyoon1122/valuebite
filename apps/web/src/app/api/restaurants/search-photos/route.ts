@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ffnxyafohnxgfxsklbaq.supabase.co';
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || '';
+const GOOGLE_API_KEY = process.env.GOOGLE_PLACES_API_KEY || '';
 
 /**
  * Search for restaurant photos by name and location
@@ -17,10 +18,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Search by name (case-insensitive partial match)
     let query = `restaurants?name->>en=ilike.*${encodeURIComponent(name.split(' ')[0])}*&select=id,name,total_reviews&limit=5`;
 
-    // If lat/lng provided, prefer nearby matches
     if (lat && lng) {
       const latNum = parseFloat(lat);
       const lngNum = parseFloat(lng);
@@ -40,10 +39,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, photos: [], reviews: [] });
     }
 
-    // Get the best match (most reviews)
     const bestMatch = restaurants[0];
 
-    // Fetch photos and reviews for the match
     const [photosRes, reviewsRes] = await Promise.all([
       fetch(`${SUPABASE_URL}/rest/v1/menu_photos?restaurant_id=eq.${bestMatch.id}&select=*&limit=10`, {
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` },
@@ -56,33 +53,30 @@ export async function GET(request: NextRequest) {
     const photos = await photosRes.json();
     const reviews = await reviewsRes.json();
 
-    const categoryLabels: Record<string, string> = {
-      exterior: 'Exterior', interior: 'Interior', menu: 'Menu', dish: 'Dish',
-    };
-    const categoryColors: Record<string, string> = {
-      exterior: 'bg-blue-500', interior: 'bg-purple-500', menu: 'bg-orange-500', dish: 'bg-green-500',
-    };
-
-    const reviewNames = ['Local Guide', 'Visitor', 'Food Lover', 'Traveler', 'Regular'];
-    const reviewTimes = ['2 weeks ago', '1 month ago', '2 months ago', '3 months ago', '6 months ago'];
+    function resolvePhotoUrl(url: string): string {
+      if (url?.startsWith('gphoto:') && GOOGLE_API_KEY) {
+        return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${url.slice(7)}&key=${GOOGLE_API_KEY}`;
+      }
+      return url;
+    }
 
     return NextResponse.json({
       success: true,
       matchedId: bestMatch.id,
       matchedName: bestMatch.name?.en,
       photos: (photos || []).map((p: any) => ({
-        url: p.photo_url,
-        label: categoryLabels[p.ai_language_detected] || 'Photo',
-        color: categoryColors[p.ai_language_detected] || 'bg-gray-500',
+        url: resolvePhotoUrl(p.photo_url),
+        label: { exterior: 'Exterior', interior: 'Interior', menu: 'Menu', dish: 'Dish' }[p.ai_language_detected as string] || 'Photo',
+        color: { exterior: 'bg-blue-500', interior: 'bg-purple-500', menu: 'bg-orange-500', dish: 'bg-green-500' }[p.ai_language_detected as string] || 'bg-gray-500',
       })),
       googleReviews: {
         totalReviews: bestMatch.total_reviews || reviews.length,
         avgRating: 4.2,
-        reviews: (reviews || []).map((rev: any, i: number) => ({
-          author: reviewNames[i % reviewNames.length],
+        reviews: (reviews || []).map((rev: any) => ({
+          author: rev.author_name || 'Google User',
           rating: rev.taste_rating || rev.value_rating || 4,
           text: rev.content || '',
-          timeAgo: reviewTimes[i % reviewTimes.length],
+          timeAgo: '',
         })),
       },
     });

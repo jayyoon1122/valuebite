@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ffnxyafohnxgfxsklbaq.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || '';
+const GOOGLE_API_KEY = process.env.GOOGLE_PLACES_API_KEY || '';
 
 async function supaFetch(path: string) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
@@ -28,22 +29,37 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const r = restaurants[0];
 
-    // Format photos with categories
-    const formattedPhotos = (photos || []).map((p: any) => ({
-      url: p.photo_url,
-      label: { exterior: 'Exterior', interior: 'Interior', menu: 'Menu', dish: 'Dish' }[p.ai_language_detected as string] || 'Photo',
-      color: { exterior: 'bg-blue-500', interior: 'bg-purple-500', menu: 'bg-orange-500', dish: 'bg-green-500' }[p.ai_language_detected as string] || 'bg-gray-500',
-    }));
+    // Format photos with categories — resolve gphoto: references to full URLs
+    const formattedPhotos = (photos || []).map((p: any) => {
+      let url = p.photo_url || '';
+      if (url.startsWith('gphoto:') && GOOGLE_API_KEY) {
+        const ref = url.slice(7);
+        url = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${ref}&key=${GOOGLE_API_KEY}`;
+      }
+      return {
+        url,
+        label: { exterior: 'Exterior', interior: 'Interior', menu: 'Menu', dish: 'Dish' }[p.ai_language_detected as string] || 'Photo',
+        color: { exterior: 'bg-blue-500', interior: 'bg-purple-500', menu: 'bg-orange-500', dish: 'bg-green-500' }[p.ai_language_detected as string] || 'bg-gray-500',
+      };
+    });
 
-    // Format reviews as Google-style with varied display
-    const reviewNames = ['Local Guide', 'Visitor', 'Food Lover', 'Traveler', 'Regular'];
-    const reviewTimes = ['2 weeks ago', '1 month ago', '2 months ago', '3 months ago', '6 months ago'];
-    const formattedReviews = (reviews || []).map((rev: any, i: number) => ({
-      author: reviewNames[i % reviewNames.length],
+    // Format reviews using real data from Supabase
+    const formattedReviews = (reviews || []).map((rev: any) => ({
+      author: rev.author_name || 'Google User',
       rating: rev.taste_rating || rev.value_rating || 4,
       text: rev.content || '',
-      timeAgo: reviewTimes[i % reviewTimes.length],
+      timeAgo: getTimeAgo(rev.created_at),
     }));
+
+    function getTimeAgo(dateStr: string): string {
+      if (!dateStr) return '';
+      const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
+      if (days < 1) return 'Today';
+      if (days < 7) return `${days}d ago`;
+      if (days < 30) return `${Math.floor(days / 7)}w ago`;
+      if (days < 365) return `${Math.floor(days / 30)}mo ago`;
+      return `${Math.floor(days / 365)}y ago`;
+    }
 
     return NextResponse.json({
       success: true,
@@ -80,13 +96,3 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 }
 
-function getTimeAgo(dateStr: string): string {
-  if (!dateStr) return '1 month ago';
-  const now = Date.now();
-  const d = new Date(dateStr).getTime();
-  const days = Math.floor((now - d) / 86400000);
-  if (days < 1) return 'Today';
-  if (days < 7) return `${days}d ago`;
-  if (days < 30) return `${Math.floor(days/7)}w ago`;
-  return `${Math.floor(days/30)}mo ago`;
-}

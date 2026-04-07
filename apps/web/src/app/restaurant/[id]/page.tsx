@@ -4,46 +4,16 @@ import { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { formatPrice } from '@valuebite/utils';
 import { BottomNav } from '@/components/BottomNav';
-import { AISummaryCard } from '@/components/AISummaryCard';
 import { MenuPhotoUploader } from '@/components/MenuPhotoUploader';
-import { PurposeFitBadges } from '@/components/PurposeFitBadges';
 import { QuickRating } from '@/components/QuickRating';
 import { DetailedReviewForm } from '@/components/DetailedReviewForm';
-import { ReviewCard } from '@/components/ReviewCard';
 import { GoogleReviewSection } from '@/components/GoogleReviewCard';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { PhotoGallery } from '@/components/PhotoGallery';
 import { fetchRestaurantDetail, fetchMenuItems } from '@/lib/data';
 import {
-  ArrowLeft, MapPin, MessageSquare, Sparkles, PenLine, ExternalLink,
+  ArrowLeft, MapPin, MessageSquare, Sparkles, PenLine, Clock, Globe, Phone, ExternalLink,
 } from 'lucide-react';
-
-const DEFAULT_PURPOSE_FITS: Record<string, Record<string, number>> = {
-  r1: { fitDailyEats: 0.95, fitSoloDining: 0.92, fitLateNight: 0.85, fitGroupParty: 0.30, fitDateNight: 0.10, fitFamilyDinner: 0.40, fitHealthyBudget: 0.50, fitSpecialOccasion: 0.05 },
-  r2: { fitDailyEats: 0.97, fitSoloDining: 0.95, fitLateNight: 0.80, fitGroupParty: 0.10, fitDateNight: 0.05, fitFamilyDinner: 0.20, fitHealthyBudget: 0.55, fitSpecialOccasion: 0.02 },
-  r8: { fitDailyEats: 0.70, fitSoloDining: 0.50, fitLateNight: 0.30, fitGroupParty: 0.75, fitDateNight: 0.55, fitFamilyDinner: 0.90, fitHealthyBudget: 0.35, fitSpecialOccasion: 0.20 },
-  r24: { fitDailyEats: 0.96, fitSoloDining: 0.90, fitLateNight: 0.40, fitGroupParty: 0.20, fitDateNight: 0.05, fitFamilyDinner: 0.45, fitHealthyBudget: 0.70, fitSpecialOccasion: 0.02 },
-  r28: { fitDailyEats: 0.40, fitSoloDining: 0.30, fitLateNight: 0.80, fitGroupParty: 0.95, fitDateNight: 0.50, fitFamilyDinner: 0.20, fitHealthyBudget: 0.15, fitSpecialOccasion: 0.30 },
-};
-
-const DEFAULT_FITS = { fitDailyEats: 0.80, fitSoloDining: 0.75, fitLateNight: 0.50, fitGroupParty: 0.40, fitDateNight: 0.30, fitFamilyDinner: 0.45, fitHealthyBudget: 0.50, fitSpecialOccasion: 0.10 };
-
-const DEFAULT_MENU = [
-  { name: 'Regular Set', price: 550, category: 'set_meal' },
-  { name: 'Large Set', price: 700, category: 'set_meal' },
-  { name: 'Side Dish', price: 150, category: 'side' },
-  { name: 'Drink', price: 120, category: 'drink' },
-];
-
-const DEFAULT_SUMMARY = {
-  summary: 'A reliable budget restaurant with consistent quality and fast service. Popular with locals for everyday meals.',
-  bestItems: ['Regular Set', 'Large Set'],
-  bestFor: ['Quick lunch', 'Solo dining'],
-  commonComplaints: ['Can be crowded at peak hours'],
-  bestTimeToVisit: 'Weekday lunch, avoid 12-1pm',
-  worthItPercentage: 80,
-  avgPricePaid: 550,
-};
 
 export default function RestaurantPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -54,7 +24,6 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
   const [loading, setLoading] = useState(true);
   const [menuItems, setMenuItems] = useState<any[]>([]);
 
-  // Load ALL data from Supabase — single source of truth
   useEffect(() => {
     setLoading(true);
     Promise.all([
@@ -94,15 +63,8 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
   const currencyMap: Record<string, string> = { JPY: 'JP', USD: 'US', GBP: 'GB', EUR: 'DE', AUD: 'AU', SGD: 'SG', AED: 'AE', TWD: 'TW', HKD: 'HK', CAD: 'CA', CHF: 'CH', CZK: 'CZ', HUF: 'HU', PLN: 'PL', TRY: 'TR', ILS: 'IL', INR: 'IN', MXN: 'MX' };
   const priceCountry = currencyMap[restaurant.priceCurrency || 'JPY'] || 'JP';
   const price = restaurant.avgMealPrice ? formatPrice(restaurant.avgMealPrice, priceCountry) : '';
-  const userReviews: any[] = [];
-  const googleData = realGoogleReviews;
-  const aiSummary = DEFAULT_SUMMARY;
-  const purposeFits = DEFAULT_PURPOSE_FITS[id] || DEFAULT_FITS;
-  const totalReviewCount = (realGoogleReviews?.totalReviews || 0) || restaurant?.totalReviews || 0;
-
-  const menu = menuItems.length > 0
-    ? menuItems.map((item: any) => ({ name: item.name, price: item.price, category: item.category }))
-    : DEFAULT_MENU;
+  const totalReviewCount = realGoogleReviews?.totalReviews || restaurant?.totalReviews || 0;
+  const currencySymbol = restaurant.priceCurrency === 'JPY' ? '¥' : restaurant.priceCurrency === 'USD' ? '$' : restaurant.priceCurrency === 'GBP' ? '£' : restaurant.priceCurrency === 'EUR' ? '€' : '$';
 
   return (
     <div className="min-h-screen pb-20">
@@ -145,8 +107,6 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
           )}
         </div>
 
-        <PurposeFitBadges fits={purposeFits} />
-
         {/* Stats */}
         <div className="flex items-center gap-6 py-3 border-t border-b border-[var(--vb-border)]">
           {price && <div className="text-center"><div className="font-semibold text-lg">{price}</div><div className="text-xs text-[var(--vb-text-secondary)]">Avg/person</div></div>}
@@ -154,74 +114,90 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
           <div className="text-center"><div className="font-semibold text-lg flex items-center gap-1"><MessageSquare size={16} /> {totalReviewCount > 0 ? totalReviewCount.toLocaleString() : '0'}</div><div className="text-xs text-[var(--vb-text-secondary)]">Reviews</div></div>
         </div>
 
-        {/* AI Summary */}
-        <AISummaryCard summary={aiSummary} />
-
         {/* Score breakdown */}
-        <div>
-          <h3 className="font-semibold mb-2">Score Breakdown</h3>
-          <div className="grid grid-cols-2 gap-2">
-            {[{ label: 'Taste', score: restaurant.tasteScore }, { label: 'Portion', score: restaurant.portionScore }].filter(s => s.score).map(({ label, score }) => (
-              <div key={label} className="bg-[var(--vb-bg-secondary)] rounded-lg p-3">
-                <div className="text-xs text-[var(--vb-text-secondary)]">{label}</div>
-                <div className="flex items-center gap-2 mt-1">
-                  <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-[var(--vb-primary)] rounded-full" style={{ width: `${((score||0)/5)*100}%` }} />
+        {(restaurant.tasteScore || restaurant.portionScore) && (
+          <div>
+            <h3 className="font-semibold mb-2">Score Breakdown</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {[{ label: 'Taste', score: restaurant.tasteScore }, { label: 'Portion', score: restaurant.portionScore }].filter(s => s.score).map(({ label, score }) => (
+                <div key={label} className="bg-[var(--vb-bg-secondary)] rounded-lg p-3">
+                  <div className="text-xs text-[var(--vb-text-secondary)]">{label}</div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div className="h-full bg-[var(--vb-primary)] rounded-full" style={{ width: `${((score||0)/5)*100}%` }} />
+                    </div>
+                    <span className="text-sm font-semibold">{score?.toFixed(1)}</span>
                   </div>
-                  <span className="text-sm font-semibold">{score?.toFixed(1)}</span>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
+        )}
+
+        {/* Operating Hours */}
+        {(restaurant.operatingHours || restaurant.is24h) && (
+          <div className="bg-[var(--vb-bg-secondary)] rounded-xl p-3">
+            <h3 className="font-semibold text-sm flex items-center gap-2 mb-1">
+              <Clock size={16} /> Hours
+            </h3>
+            <p className="text-sm text-[var(--vb-text-secondary)]">
+              {restaurant.is24h ? 'Open 24 hours' : (restaurant.operatingHours || 'Hours not available')}
+            </p>
+          </div>
+        )}
+
+        {/* Contact & Location */}
+        <div className="flex flex-wrap gap-2">
+          {restaurant.phone && (
+            <a href={`tel:${restaurant.phone}`} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--vb-bg-secondary)] rounded-lg text-sm hover:bg-[var(--vb-primary)] hover:text-white transition">
+              <Phone size={14} /> Call
+            </a>
+          )}
+          {restaurant.website && (
+            <a href={restaurant.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 bg-[var(--vb-bg-secondary)] rounded-lg text-sm hover:bg-[var(--vb-primary)] hover:text-white transition">
+              <Globe size={14} /> Website
+            </a>
+          )}
+          {restaurant.lat && restaurant.lng && (
+            <a href={`https://www.google.com/maps/search/?api=1&query=${restaurant.lat},${restaurant.lng}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 bg-[var(--vb-bg-secondary)] rounded-lg text-sm hover:bg-[var(--vb-primary)] hover:text-white transition">
+              <MapPin size={14} /> Directions
+            </a>
+          )}
         </div>
 
-        {/* Purpose Fit */}
-        <div>
-          <h3 className="font-semibold mb-2">Purpose Fit</h3>
-          <PurposeFitBadges fits={purposeFits} showAll />
-        </div>
+        {/* Address */}
+        {restaurant.address && (
+          <p className="text-sm text-[var(--vb-text-secondary)]">
+            <MapPin size={12} className="inline mr-1" />{restaurant.address}
+          </p>
+        )}
 
-        {/* Menu */}
-        <div>
-          <h3 className="font-semibold mb-2 flex items-center gap-2">
-            Menu
-            <span className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 px-2 py-0.5 rounded-full flex items-center gap-1">
-              <Sparkles size={10} /> AI Extracted
-            </span>
-          </h3>
-          <div className="space-y-1">
-            {menu.map((item: any, i: number) => (
-              <div key={i} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[var(--vb-bg-secondary)]">
-                <div className="flex items-center gap-2">
+        {/* Menu — only show if we have real menu items from AI extraction */}
+        {menuItems.length > 0 && (
+          <div>
+            <h3 className="font-semibold mb-2 flex items-center gap-2">
+              Menu
+              <span className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <Sparkles size={10} /> AI Extracted
+              </span>
+            </h3>
+            <div className="space-y-1">
+              {menuItems.map((item: any, i: number) => (
+                <div key={i} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[var(--vb-bg-secondary)]">
                   <span className="text-sm">{item.name}</span>
-                  {item.isLunchSpecial && <span className="text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 px-1.5 py-0.5 rounded">Lunch Special</span>}
-                  {item.tag && <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded">{item.tag}</span>}
+                  <span className="font-semibold text-sm">{formatPrice(item.price, priceCountry)}</span>
                 </div>
-                <span className="font-semibold text-sm">{formatPrice(item.price, priceCountry)}</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <MenuPhotoUploader restaurantId={id} />
 
-        {/* Banner ad between menu and reviews */}
-        <div className="bg-[var(--vb-bg-secondary)] rounded-xl p-3 flex items-center gap-3 relative overflow-hidden">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white text-sm font-bold shrink-0">R</div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium">Earn cash back on dining</p>
-            <p className="text-xs text-[var(--vb-text-secondary)]">Up to 5% back at partner restaurants</p>
-          </div>
-          <button className="shrink-0 px-3 py-1.5 rounded-lg bg-[var(--vb-primary)] text-white text-xs font-semibold">Start</button>
-          <span className="absolute top-1 right-2 text-[10px] text-[var(--vb-text-secondary)]">Ad</span>
-        </div>
+        {/* Quick Rating */}
+        <QuickRating restaurantId={id} currency={currencySymbol} />
 
-        {/* === REVIEW SECTION (Google-first) === */}
-
-        {/* 1. Quick "Was it worth it?" — most likely user action */}
-        <QuickRating restaurantId={id} currency={restaurant.priceCurrency === 'JPY' ? '¥' : restaurant.priceCurrency === 'USD' ? '$' : restaurant.priceCurrency === 'GBP' ? '£' : restaurant.priceCurrency === 'EUR' ? '€' : '$'} />
-
-        {/* 1.5. Share experience — right below quick rating */}
+        {/* Write Review */}
         <button
           onClick={() => setShowReviewForm(!showReviewForm)}
           className="w-full py-2.5 rounded-xl border border-[var(--vb-border)] text-[var(--vb-text-secondary)] text-sm font-medium flex items-center justify-center gap-2 hover:border-[var(--vb-primary)] hover:text-[var(--vb-primary)] transition"
@@ -230,41 +206,26 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
         </button>
 
         {showReviewForm && (
-          <DetailedReviewForm restaurantId={id} restaurantName={name} currency={restaurant.priceCurrency === 'JPY' ? '¥' : '$'} onClose={() => setShowReviewForm(false)} />
+          <DetailedReviewForm restaurantId={id} restaurantName={name} currency={currencySymbol} onClose={() => setShowReviewForm(false)} />
         )}
 
-        {/* 2. Google Reviews — primary review source from Supabase */}
-        {(realGoogleReviews || googleData) && (
+        {/* Google Reviews */}
+        {realGoogleReviews && (
           <GoogleReviewSection
-            reviews={(realGoogleReviews || googleData).reviews}
-            totalCount={(realGoogleReviews || googleData).totalReviews}
-            avgRating={(realGoogleReviews || googleData).avgRating}
+            reviews={realGoogleReviews.reviews}
+            totalCount={realGoogleReviews.totalReviews}
+            avgRating={realGoogleReviews.avgRating}
           />
         )}
 
-        {/* 3. ValueBite Community Reviews — secondary */}
-        {userReviews.length > 0 && (
-          <div>
-            <h3 className="font-semibold mb-3 flex items-center gap-2">
-              ValueBite Reviews
-              <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full">
-                {userReviews.length}
-              </span>
-            </h3>
-            <div className="space-y-3">
-              {userReviews.map((review) => <ReviewCard key={review.id} review={review} />)}
-            </div>
+        {/* Freshness */}
+        {restaurant.freshnessIndicator && (
+          <div className="text-center">
+            <span className={`text-xs ${restaurant.freshnessIndicator.color === 'green' ? 'text-green-600' : restaurant.freshnessIndicator.color === 'yellow' ? 'text-yellow-600' : 'text-red-600'}`}>
+              {restaurant.freshnessIndicator.label}
+            </span>
           </div>
         )}
-
-        {/* (Write review button moved above Google reviews) */}
-
-        {/* Freshness */}
-        <div className="text-center">
-          <span className={`text-xs ${restaurant.freshnessIndicator.color === 'green' ? 'text-green-600' : restaurant.freshnessIndicator.color === 'yellow' ? 'text-yellow-600' : 'text-red-600'}`}>
-            {restaurant.freshnessIndicator.label}
-          </span>
-        </div>
       </div>
 
       <BottomNav />

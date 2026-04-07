@@ -1,23 +1,61 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
 
 interface Props {
   restaurantId: string;
-  initialFavorited?: boolean;
+  restaurantName?: string;
   size?: number;
 }
 
-export function FavoriteButton({ restaurantId, initialFavorited = false, size = 22 }: Props) {
-  const [favorited, setFavorited] = useState(initialFavorited);
+function getFavorites(): string[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const saved = localStorage.getItem('valuebite-favorites');
+    if (!saved) return [];
+    const parsed = JSON.parse(saved);
+    return Array.isArray(parsed) ? parsed.map((f: any) => typeof f === 'string' ? f : f.id) : [];
+  } catch { return []; }
+}
+
+function saveFavorite(id: string, name?: string) {
+  try {
+    const saved = localStorage.getItem('valuebite-favorites');
+    const favorites: Array<{ id: string; name: string }> = saved ? JSON.parse(saved) : [];
+    if (!favorites.find((f: any) => (typeof f === 'string' ? f : f.id) === id)) {
+      favorites.push({ id, name: name || 'Restaurant' });
+      localStorage.setItem('valuebite-favorites', JSON.stringify(favorites));
+    }
+  } catch {}
+}
+
+function removeFavorite(id: string) {
+  try {
+    const saved = localStorage.getItem('valuebite-favorites');
+    const favorites: any[] = saved ? JSON.parse(saved) : [];
+    const filtered = favorites.filter((f: any) => (typeof f === 'string' ? f : f.id) !== id);
+    localStorage.setItem('valuebite-favorites', JSON.stringify(filtered));
+  } catch {}
+}
+
+export function FavoriteButton({ restaurantId, restaurantName, size = 22 }: Props) {
+  const [favorited, setFavorited] = useState(false);
   const [animating, setAnimating] = useState(false);
 
+  useEffect(() => {
+    setFavorited(getFavorites().includes(restaurantId));
+  }, [restaurantId]);
+
   const toggle = () => {
-    setFavorited(!favorited);
-    if (!favorited) {
+    const next = !favorited;
+    setFavorited(next);
+    if (next) {
+      saveFavorite(restaurantId, restaurantName);
       setAnimating(true);
       setTimeout(() => setAnimating(false), 300);
+    } else {
+      removeFavorite(restaurantId);
     }
   };
 

@@ -1,23 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { BottomNav } from '@/components/BottomNav';
 import { BudgetTracker } from '@/components/BudgetTracker';
-import { PriceAlertBanner } from '@/components/PriceAlertBanner';
-import { User, Heart, Star, Camera, Award, Settings, ChevronRight, Trophy, Flame, Target, Pencil } from 'lucide-react';
+import { User, Heart, Settings, Pencil } from 'lucide-react';
 
-const BADGES = [
-  { id: 'trailblazer', icon: '🏪', label: 'Trailblazer', desc: 'First restaurant suggestion', earned: true },
-  { id: 'menu_scout', icon: '📸', label: 'Menu Scout', desc: 'Upload 5 menu photos', earned: true },
-  { id: 'reviewer', icon: '✍️', label: 'Reviewer', desc: 'Write 10 reviews', earned: false, progress: '7/10' },
-  { id: 'price_checker', icon: '✅', label: 'Price Checker', desc: 'Verify 5 restaurants', earned: false, progress: '2/5' },
-  { id: 'power_reviewer', icon: '🔥', label: 'Power Reviewer', desc: '10 reviews in one month', earned: false, progress: '7/10' },
-  { id: 'trusted', icon: '⭐', label: 'Trusted Reviewer', desc: 'Review marked most helpful', earned: false },
-];
+interface FavoriteItem {
+  id: string;
+  name: string;
+  cuisine?: string;
+  price?: string;
+  score?: number;
+}
+
+function loadFavorites(): FavoriteItem[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const saved = localStorage.getItem('valuebite-favorites');
+    return saved ? JSON.parse(saved) : [];
+  } catch { return []; }
+}
+
+function loadUserStats() {
+  if (typeof window === 'undefined') return { reviews: 0, photos: 0, helpful: 0 };
+  try {
+    const saved = localStorage.getItem('valuebite-user-stats');
+    return saved ? JSON.parse(saved) : { reviews: 0, photos: 0, helpful: 0 };
+  } catch { return { reviews: 0, photos: 0, helpful: 0 }; }
+}
 
 export default function ProfilePage() {
-  const [activeTab, setActiveTab] = useState<'budget' | 'badges' | 'favorites'>('budget');
+  const [activeTab, setActiveTab] = useState<'budget' | 'favorites'>('budget');
+  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+  const [stats, setStats] = useState({ reviews: 0, photos: 0, helpful: 0 });
+
+  useEffect(() => {
+    setFavorites(loadFavorites());
+    setStats(loadUserStats());
+  }, []);
 
   return (
     <div className="min-h-screen pb-20">
@@ -38,11 +59,8 @@ export default function ProfilePage() {
               <User size={32} />
             </div>
             <div className="flex-1">
-              <h2 className="text-xl font-bold">TokyoFoodie</h2>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">Lv.3 Expert 🎯</span>
-                <span className="text-xs opacity-80">1,250 pts</span>
-              </div>
+              <h2 className="text-xl font-bold">ValueBite User</h2>
+              <p className="text-xs opacity-80 mt-1">Sign in to track your dining history</p>
             </div>
             <Link
               href="/profile/edit"
@@ -52,42 +70,25 @@ export default function ProfilePage() {
               Edit
             </Link>
           </div>
-          <div className="grid grid-cols-4 gap-3 mt-4 pt-4 border-t border-white/20">
+          <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-white/20">
             <div className="text-center">
-              <div className="font-bold text-lg">27</div>
+              <div className="font-bold text-lg">{stats.reviews}</div>
               <div className="text-xs opacity-80">Reviews</div>
             </div>
             <div className="text-center">
-              <div className="font-bold text-lg">12</div>
+              <div className="font-bold text-lg">{stats.photos}</div>
               <div className="text-xs opacity-80">Photos</div>
             </div>
             <div className="text-center">
-              <div className="font-bold text-lg">45</div>
-              <div className="text-xs opacity-80">Helpful</div>
-            </div>
-            <div className="text-center">
-              <div className="font-bold text-lg">8</div>
+              <div className="font-bold text-lg">{favorites.length}</div>
               <div className="text-xs opacity-80">Favorites</div>
-            </div>
-          </div>
-          {/* XP progress to next level */}
-          <div className="mt-3">
-            <div className="flex justify-between text-xs opacity-80 mb-1">
-              <span>Level 3: Expert</span>
-              <span>1,250 / 2,000 pts to Master</span>
-            </div>
-            <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
-              <div className="h-full bg-white rounded-full" style={{ width: '62.5%' }} />
             </div>
           </div>
         </div>
 
-        {/* Price alerts */}
-        <PriceAlertBanner />
-
         {/* Tab switcher */}
         <div className="flex gap-1 bg-[var(--vb-bg-secondary)] rounded-xl p-1">
-          {(['budget', 'badges', 'favorites'] as const).map((tab) => (
+          {(['budget', 'favorites'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -105,85 +106,37 @@ export default function ProfilePage() {
         {/* Tab content */}
         {activeTab === 'budget' && <BudgetTracker />}
 
-        {activeTab === 'badges' && (
-          <div className="space-y-3">
-            <div className="grid grid-cols-3 gap-3 text-center mb-4">
-              <div className="bg-[var(--vb-bg-secondary)] rounded-xl p-3">
-                <Trophy size={24} className="text-yellow-500 mx-auto mb-1" />
-                <div className="text-lg font-bold">2</div>
-                <div className="text-xs text-[var(--vb-text-secondary)]">Badges Earned</div>
-              </div>
-              <div className="bg-[var(--vb-bg-secondary)] rounded-xl p-3">
-                <Flame size={24} className="text-orange-500 mx-auto mb-1" />
-                <div className="text-lg font-bold">5</div>
-                <div className="text-xs text-[var(--vb-text-secondary)]">Day Streak</div>
-              </div>
-              <div className="bg-[var(--vb-bg-secondary)] rounded-xl p-3">
-                <Target size={24} className="text-blue-500 mx-auto mb-1" />
-                <div className="text-lg font-bold">3</div>
-                <div className="text-xs text-[var(--vb-text-secondary)]">In Progress</div>
-              </div>
-            </div>
-
-            {BADGES.map((badge) => (
-              <div
-                key={badge.id}
-                className={`flex items-center gap-3 p-3 rounded-xl border ${
-                  badge.earned
-                    ? 'border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-950/20'
-                    : 'border-[var(--vb-border)] bg-[var(--vb-bg)]'
-                }`}
-              >
-                <span className={`text-2xl ${badge.earned ? '' : 'grayscale opacity-40'}`}>
-                  {badge.icon}
-                </span>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm">{badge.label}</span>
-                    {badge.earned && <span className="text-xs text-yellow-600 font-semibold">Earned!</span>}
-                  </div>
-                  <p className="text-xs text-[var(--vb-text-secondary)]">{badge.desc}</p>
-                  {badge.progress && !badge.earned && (
-                    <div className="mt-1">
-                      <div className="flex justify-between text-xs mb-0.5">
-                        <span className="text-[var(--vb-text-secondary)]">Progress</span>
-                        <span className="font-medium">{badge.progress}</span>
-                      </div>
-                      <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-[var(--vb-primary)] rounded-full"
-                          style={{ width: `${(parseInt(badge.progress) / parseInt(badge.progress.split('/')[1])) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
         {activeTab === 'favorites' && (
           <div className="space-y-3">
-            {[
-              { name: 'Matsuya Shinjuku', cuisine: 'Gyudon', price: '¥550', score: 4.5 },
-              { name: 'Fuji Soba Shinjuku', cuisine: 'Soba', price: '¥420', score: 4.7 },
-              { name: 'Saizeriya Shibuya', cuisine: 'Italian', price: '¥650', score: 4.6 },
-            ].map((fav, i) => (
-              <div key={i} className="flex items-center gap-3 p-3 rounded-xl border border-[var(--vb-border)]">
-                <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-lg">
-                  🍽️
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-medium text-sm">{fav.name}</h4>
-                  <p className="text-xs text-[var(--vb-text-secondary)]">{fav.cuisine} · {fav.price}/person</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-bold text-[var(--vb-primary)]">{fav.score}</div>
-                  <Heart size={14} className="text-red-500 fill-red-500 ml-auto" />
-                </div>
+            {favorites.length === 0 ? (
+              <div className="text-center py-12">
+                <Heart size={48} className="mx-auto mb-3 text-[var(--vb-text-secondary)] opacity-30" />
+                <p className="font-semibold">No favorites yet</p>
+                <p className="text-sm text-[var(--vb-text-secondary)] mt-1">
+                  Tap the heart icon on any restaurant to save it here
+                </p>
+                <Link href="/" className="inline-block mt-4 px-4 py-2 bg-[var(--vb-primary)] text-white rounded-lg text-sm font-semibold">
+                  Explore Restaurants
+                </Link>
               </div>
-            ))}
+            ) : (
+              favorites.map((fav) => (
+                <Link
+                  key={fav.id}
+                  href={`/restaurant/${fav.id}`}
+                  className="flex items-center gap-3 p-3 rounded-xl border border-[var(--vb-border)] hover:shadow-md transition"
+                >
+                  <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-lg">
+                    🍽
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-sm">{fav.name}</h4>
+                    {fav.cuisine && <p className="text-xs text-[var(--vb-text-secondary)]">{fav.cuisine}</p>}
+                  </div>
+                  <Heart size={16} className="text-red-500 fill-red-500" />
+                </Link>
+              ))
+            )}
           </div>
         )}
       </div>
