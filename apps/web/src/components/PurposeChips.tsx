@@ -2,11 +2,12 @@
 
 import { useAppStore } from '@/lib/store';
 import { ChainToggle } from './ChainToggle';
-import { MOCK_BRACKETS } from '@/lib/mock-data';
+import { getCityBrackets } from '@/lib/city-brackets';
 import type { PurposeKey } from '@valuebite/types';
 
 export function PurposeChips() {
-  const { selectedPurpose, setSelectedPurpose, locale } = useAppStore();
+  const { selectedPurpose, setSelectedPurpose, locale, cityId, countryCode } = useAppStore();
+  const brackets = getCityBrackets(cityId || 'tokyo', countryCode);
 
   return (
     <div className="flex gap-2 overflow-x-auto py-2 px-4 scrollbar-hide">
@@ -20,7 +21,7 @@ export function PurposeChips() {
       >
         All
       </button>
-      {MOCK_BRACKETS.map((bracket) => {
+      {brackets.map((bracket) => {
         const label = bracket.purposeLabel[locale] || bracket.purposeLabel.en;
         return (
           <button

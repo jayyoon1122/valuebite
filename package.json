@@ -17,8 +17,13 @@
     "db:migrate": "turbo db:migrate --filter=@valuebite/db",
     "db:seed": "turbo db:seed --filter=@valuebite/db"
   },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
   "devDependencies": {
-    "turbo": "^2.5.0"
+    "turbo": "^2.5.0",
+    "@types/node": "^22.0.0"
   },
   "engines": {
     "node": ">=20.0.0"

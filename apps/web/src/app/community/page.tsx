@@ -2,7 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { BottomNav } from '@/components/BottomNav';
-import { SEED_POSTS } from '@/lib/seed-data';
+// Community posts — will come from Supabase when user auth is implemented
+const POSTS = [
+  { id: 'p1', type: 'tip', user: 'TokyoFoodie', userLevel: 3, title: 'Top 5 lunch spots under ¥500 near Shinjuku Station', content: 'After 6 months of daily exploration, here are my top picks for budget lunches near Shinjuku.', upvotes: 156, comments: 1, time: '2h ago' },
+  { id: 'p2', type: 'deal', user: 'DealHunter', userLevel: 2, title: 'Saizeriya added a ¥299 pasta', content: 'The new peperoncino pasta at Saizeriya is only ¥299 (tax included). Best deal in Tokyo.', upvotes: 234, comments: 1, time: '5h ago' },
+  { id: 'p3', type: 'discussion', user: 'RamenHunter', userLevel: 2, title: 'Is Ichiran worth ¥1,000+ when Hidakaya exists at ¥490?', content: 'Genuine question about value vs taste. What do you all think?', upvotes: 89, comments: 2, time: '8h ago' },
+  { id: 'p4', type: 'tip', user: 'BudgetSalary', userLevel: 2, title: 'Matsuya breakfast sets are the best-kept secret', content: 'Grilled salmon + rice + miso for ¥350. Cheaper than convenience store breakfast.', upvotes: 198, comments: 0, time: '1d ago' },
+  { id: 'p5', type: 'deal', user: 'AppDealFinder', userLevel: 2, title: 'Matsuya app: Free miso upgrade coupon!', content: 'Free upgrade from regular miso to premium tonjiru (pork miso) worth ¥100.', upvotes: 312, comments: 1, time: '2d ago' },
+];
 import { MessageSquare, TrendingUp, Plus, X, Send, ArrowUp } from 'lucide-react';
 
 const typeStyles: Record<string, { bg: string; text: string; label: string }> = {
@@ -34,8 +41,8 @@ export default function CommunityPage() {
   const tabs = ['All', 'Tips', 'Deals', 'Discussions'];
 
   const filtered = activeTab === 'All'
-    ? SEED_POSTS
-    : SEED_POSTS.filter((p) => p.type === activeTab.toLowerCase().replace('s', ''));
+    ? POSTS
+    : POSTS.filter((p) => p.type === activeTab.toLowerCase().replace('s', ''));
 
   // Lock body scroll when modal is open
   useEffect(() => {
