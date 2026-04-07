@@ -52,8 +52,9 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
   const [realGoogleReviews, setRealGoogleReviews] = useState<any | null>(null);
   const [restaurant, setRestaurant] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [menuItems, setMenuItems] = useState<any[]>([]);
 
-  // Load ALL data from Supabase — no seed data
+  // Load ALL data from Supabase
   useEffect(() => {
     setLoading(true);
     fetchRealRestaurantDetail(id).then((data) => {
@@ -64,6 +65,14 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
       }
       setLoading(false);
     }).catch(() => setLoading(false));
+  }, [id]);
+
+  // Load menu items from DB
+  useEffect(() => {
+    fetch(`/api/menu-analyze?restaurantId=${id}`)
+      .then(r => r.json())
+      .then(d => { if (d.success && d.data?.length > 0) setMenuItems(d.data); })
+      .catch(() => {});
   }, [id]);
 
   if (loading) {
@@ -92,17 +101,8 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
   const userReviews: any[] = [];
   const googleData = realGoogleReviews;
   const aiSummary = DEFAULT_SUMMARY;
-  const [menuItems, setMenuItems] = useState<any[]>([]);
   const purposeFits = DEFAULT_PURPOSE_FITS[id] || DEFAULT_FITS;
   const totalReviewCount = (realGoogleReviews?.totalReviews || 0) || restaurant?.totalReviews || 0;
-
-  // Load menu items from DB
-  useEffect(() => {
-    fetch(`/api/menu-analyze?restaurantId=${id}`)
-      .then(r => r.json())
-      .then(d => { if (d.success && d.data?.length > 0) setMenuItems(d.data); })
-      .catch(() => {});
-  }, [id]);
 
   const menu = menuItems.length > 0
     ? menuItems.map((item: any) => ({ name: item.name, price: item.price, category: item.category }))
