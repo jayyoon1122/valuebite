@@ -77,10 +77,8 @@ export function FullScreenPhoto({ photos, initialIndex, onClose }: Props) {
         />
       </div>
 
-      {/* Label */}
-      <div className="text-center py-3">
-        <span className="text-white text-sm font-medium">{current.label}</span>
-      </div>
+      {/* Bottom spacing */}
+      <div className="py-3" />
 
       {/* Arrow buttons (desktop) */}
       {photos.length > 1 && (

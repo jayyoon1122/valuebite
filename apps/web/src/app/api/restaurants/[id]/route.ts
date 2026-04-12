@@ -16,11 +16,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const { id } = await params;
 
   try {
-    // Fetch restaurant, reviews, and photos in parallel
-    const [restaurants, reviews, photos] = await Promise.all([
+    // Fetch restaurant, reviews, photos, and menu items in parallel
+    const [restaurants, reviews, photos, menuItems] = await Promise.all([
       supaFetch(`restaurants?id=eq.${id}&select=*&limit=1`),
       supaFetch(`reviews?restaurant_id=eq.${id}&select=*&order=created_at.desc&limit=10`),
       supaFetch(`menu_photos?restaurant_id=eq.${id}&select=*&limit=15`),
+      supaFetch(`menu_items?restaurant_id=eq.${id}&select=*&order=category,price`),
     ]);
 
     if (!restaurants || restaurants.length === 0) {
@@ -61,6 +62,32 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return `${Math.floor(days / 365)}y ago`;
     }
 
+    // Format menu items with categories
+    const formattedMenuItems = (menuItems || []).map((item: any) => ({
+      name: item.name?.en || item.name?.original || 'Unknown',
+      nameLocal: item.name?.original,
+      price: parseFloat(String(item.price)),
+      currency: item.currency || 'USD',
+      category: item.category || 'main',
+      source: item.source,
+    }));
+
+    // Compute "typical meal price" from menu items
+    // Priority: median of main/set_meal/combo items (what people actually order as a meal)
+    // Fallback: median of all items (more robust than mean against cheap sides/drinks)
+    function median(arr: number[]): number {
+      const sorted = [...arr].sort((a, b) => a - b);
+      const mid = Math.floor(sorted.length / 2);
+      return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+    }
+    const mealItems = formattedMenuItems.filter((m: any) => ['main', 'set_meal', 'combo'].includes(m.category));
+    const mealPrices = (mealItems.length >= 3 ? mealItems : formattedMenuItems)
+      .map((m: any) => m.price).filter((p: number) => p > 0);
+    const typicalMealPrice = mealPrices.length > 0 ? median(mealPrices) : null;
+
+    // Use real menu price if available, otherwise fall back to DB value
+    const avgMealPrice = typicalMealPrice || (r.avg_meal_price ? parseFloat(String(r.avg_meal_price)) : undefined);
+
     return NextResponse.json({
       success: true,
       data: {
@@ -70,7 +97,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         cuisineType: r.cuisine_type || [],
         lat: r.lat,
         lng: r.lng,
-        avgMealPrice: r.avg_meal_price ? parseFloat(String(r.avg_meal_price)) : undefined,
+        avgMealPrice,
         priceCurrency: r.price_currency,
         valueScore: r.value_score ? parseFloat(String(r.value_score)) : undefined,
         tasteScore: r.taste_score ? parseFloat(String(r.taste_score)) : undefined,
@@ -82,6 +109,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         is24h: r.is_24h,
         isChain: r.is_chain,
         address: r.address,
+        menuItemCount: formattedMenuItems.length,
+        menuItems: formattedMenuItems,
         freshnessIndicator: { label: 'Recently Verified', color: 'green', icon: 'check' },
         photos: formattedPhotos,
         googleReviews: {
