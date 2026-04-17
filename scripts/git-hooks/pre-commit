@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+# ValueBite pre-commit hook — blocks committing common secret patterns.
+# Install: bash scripts/setup-git-hooks.sh
+# Bypass (NOT recommended): git commit --no-verify
+
+set -e
+
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+# Get list of staged files (added or modified, no deletions)
+STAGED=$(git diff --cached --name-only --diff-filter=AM)
+[ -z "$STAGED" ] && exit 0
+
+FOUND_ISSUES=0
+ISSUES_LOG=""
+
+# --- Pattern definitions ---
+# Each entry: "REGEX::DESCRIPTION"
+PATTERNS=(
+  'AIza[0-9A-Za-z_-]{35}::Google API key (AIza...)'
+  'sk-ant-api[0-9]{2}-[0-9A-Za-z_-]{40,}::Anthropic API key (sk-ant-...)'
+  'sk-[0-9A-Za-z]{32,}::OpenAI API key (sk-...)'
+  'ghp_[0-9A-Za-z]{36}::GitHub personal access token (ghp_...)'
+  'github_pat_[0-9A-Za-z_]{82}::GitHub fine-grained token'
+  'glpat-[0-9A-Za-z_-]{20}::GitLab personal access token'
+  'eyJhbGciOi[0-9A-Za-z_-]{20,}\.[0-9A-Za-z_-]{20,}\.[0-9A-Za-z_-]{20,}::JWT token (eyJ...)'
+  'sb_secret_[0-9A-Za-z_-]{40,}::Supabase secret key'
+  'service_role.{0,30}eyJ::Supabase service role JWT'
+  'aws_access_key_id[[:space:]]*=[[:space:]]*[A-Z0-9]{20}::AWS access key ID'
+  'AKIA[0-9A-Z]{16}::AWS access key (AKIA...)'
+  'BEGIN [A-Z ]*PRIVATE KEY::Private key block'
+  'mongodb\+?srv?://[^:]+:[^@]+@::MongoDB connection string with credentials'
+  'postgres(ql)?://[^:]+:[^@]+@[^l1]::Postgres URL with credentials (non-localhost)'
+)
+
+# --- Check each staged file ---
+for FILE in $STAGED; do
+  # Skip files git considers binary
+  if file "$FILE" 2>/dev/null | grep -qE '(binary|image|audio|video)'; then
+    continue
+  fi
+  # Skip lockfiles, binaries, and the hook itself (it contains regex patterns that look like keys)
+  case "$FILE" in
+    *node_modules*|*.lock|*.lockb|*-lock.json|*.png|*.jpg|*.jpeg|*.svg|*.pdf|*.ico|*.woff*|*.aab|*.apk|*.keystore|*.pem|*.p12)
+      continue
+      ;;
+    scripts/git-hooks/*|scripts/setup-git-hooks.sh)
+      continue
+      ;;
+  esac
+
+  # Get only the staged diff (lines added)
+  DIFF=$(git diff --cached --no-color -- "$FILE" 2>/dev/null | grep '^+' | grep -v '^+++')
+  [ -z "$DIFF" ] && continue
+
+  for ENTRY in "${PATTERNS[@]}"; do
+    REGEX="${ENTRY%%::*}"
+    DESC="${ENTRY##*::}"
+    # Use grep -E -e -- for portability (macOS BSD grep + GNU grep)
+    if printf '%s\n' "$DIFF" | grep -qE -e "$REGEX" 2>/dev/null; then
+      MATCHES=$(printf '%s\n' "$DIFF" | grep -nE -e "$REGEX" 2>/dev/null || true)
+      # Skip obvious placeholders
+      REAL=$(printf '%s\n' "$MATCHES" | grep -vE -e 'your[_-]?(key|secret)|REPLACE_|<[a-z_-]+>|xxx+|placeholder|EXAMPLE|\.\.\.you' 2>/dev/null || true)
+      if [ -n "$REAL" ]; then
+        FOUND_ISSUES=$((FOUND_ISSUES + 1))
+        ISSUES_LOG+="${RED}✘${NC} ${FILE}: ${DESC}\n"
+        ISSUES_LOG+="  ${YELLOW}$(printf '%s\n' "$REAL" | head -2 | sed 's/^/  /')${NC}\n"
+      fi
+    fi
+  done
+done
+
+# --- Block commit if issues found ---
+if [ $FOUND_ISSUES -gt 0 ]; then
+  echo
+  echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${RED}🚨 PRE-COMMIT BLOCKED — ${FOUND_ISSUES} potential secret(s) detected${NC}"
+  echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo
+  echo -e "$ISSUES_LOG"
+  echo -e "${YELLOW}Options:${NC}"
+  echo "  1. Remove the secret from the file and re-stage."
+  echo "  2. If it's a placeholder/example, use formats like 'AIzaSy...your_key_here'"
+  echo "     or '<your-key-here>' which the hook recognizes as fake."
+  echo "  3. To bypass (only if you're 100% sure it's a false positive):"
+  echo -e "     ${YELLOW}git commit --no-verify${NC}"
+  echo
+  exit 1
+fi
+
+echo -e "${GREEN}✓ pre-commit: no secrets detected${NC}"
+exit 0
