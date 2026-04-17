@@ -4,7 +4,11 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { BottomNav } from '@/components/BottomNav';
 import { BudgetTracker } from '@/components/BudgetTracker';
-import { User, Heart, Settings, Pencil } from 'lucide-react';
+import { loadProfile } from '@/lib/user-profile';
+import { formatPrice } from '@valuebite/utils';
+import { useAppStore } from '@/lib/store';
+import { REGIONS } from '@/lib/regions';
+import { User, Heart, Settings, Pencil, Star, DollarSign } from 'lucide-react';
 
 interface FavoriteItem {
   id: string;
@@ -31,13 +35,17 @@ function loadUserStats() {
 }
 
 export default function ProfilePage() {
-  const [activeTab, setActiveTab] = useState<'budget' | 'favorites'>('budget');
+  const { countryCode } = useAppStore();
+  const [activeTab, setActiveTab] = useState<'budget' | 'favorites' | 'stats'>('budget');
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [stats, setStats] = useState({ reviews: 0, photos: 0, helpful: 0 });
+  const [profile, setProfile] = useState({ displayName: '', avatarDataUrl: null as string | null });
 
   useEffect(() => {
     setFavorites(loadFavorites());
     setStats(loadUserStats());
+    const p = loadProfile();
+    setProfile({ displayName: p.displayName, avatarDataUrl: p.avatarDataUrl });
   }, []);
 
   return (
@@ -55,12 +63,16 @@ export default function ProfilePage() {
         {/* User card */}
         <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-5 text-white">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
-              <User size={32} />
+            <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
+              {profile.avatarDataUrl ? (
+                <img src={profile.avatarDataUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <User size={32} />
+              )}
             </div>
             <div className="flex-1">
-              <h2 className="text-xl font-bold">ValueBite User</h2>
-              <p className="text-xs opacity-80 mt-1">Sign in to track your dining history</p>
+              <h2 className="text-xl font-bold">{profile.displayName || 'ValueBite User'}</h2>
+              <p className="text-xs opacity-80 mt-1">{profile.displayName ? 'Budget dining explorer' : 'Set up your profile to personalize'}</p>
             </div>
             <Link
               href="/profile/edit"
@@ -88,7 +100,7 @@ export default function ProfilePage() {
 
         {/* Tab switcher */}
         <div className="flex gap-1 bg-[var(--vb-bg-secondary)] rounded-xl p-1">
-          {(['budget', 'favorites'] as const).map((tab) => (
+          {(['budget', 'favorites', 'stats'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -104,7 +116,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Tab content */}
-        {activeTab === 'budget' && <BudgetTracker />}
+        {activeTab === 'budget' && <BudgetTracker countryCode={countryCode} />}
 
         {activeTab === 'favorites' && (
           <div className="space-y-3">
@@ -129,16 +141,96 @@ export default function ProfilePage() {
                   <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-lg">
                     🍽
                   </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium text-sm">{fav.name}</h4>
-                    {fav.cuisine && <p className="text-xs text-[var(--vb-text-secondary)]">{fav.cuisine}</p>}
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-sm truncate">{fav.name}</h4>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {fav.cuisine && (
+                        <span className="text-xs text-[var(--vb-text-secondary)] truncate capitalize">{fav.cuisine.replace(/_/g, ' ')}</span>
+                      )}
+                      {fav.price && (
+                        <span className="text-xs font-semibold text-[var(--vb-text)] flex items-center gap-0.5 shrink-0">
+                          <DollarSign size={10} />{fav.price}
+                        </span>
+                      )}
+                      {fav.score && (
+                        <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-0.5 shrink-0">
+                          <Star size={10} className="fill-current" />{fav.score.toFixed(1)}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <Heart size={16} className="text-red-500 fill-red-500" />
+                  <Heart size={16} className="text-red-500 fill-red-500 shrink-0" />
                 </Link>
               ))
             )}
           </div>
         )}
+
+        {activeTab === 'stats' && (() => {
+          // Load expenses for stats calculation
+          let expenses: Array<{ amount: number; date: string }> = [];
+          try {
+            const saved = localStorage.getItem('valuebite-expenses');
+            expenses = saved ? JSON.parse(saved) : [];
+          } catch {}
+
+          const totalMeals = expenses.length;
+          const totalSpent = expenses.reduce((s, e) => s + (e.amount || 0), 0);
+          const avgPerMeal = totalMeals > 0 ? totalSpent / totalMeals : 0;
+
+          // Estimate savings (compared to typical dining out — 1.5x of budget average)
+          const typicalPerMeal = avgPerMeal * 1.5;
+          const estimatedSavings = totalMeals > 0 ? (typicalPerMeal - avgPerMeal) * totalMeals : 0;
+
+          // Streaks — days with at least one logged meal
+          const uniqueDays = new Set(expenses.map(e => e.date)).size;
+
+          return (
+            <div className="space-y-4">
+              <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-5 text-white">
+                <h3 className="font-semibold text-sm opacity-80 mb-3">Your ValueBite Journey</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">{totalMeals}</div>
+                    <div className="text-xs opacity-80">Meals Tracked</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">{uniqueDays}</div>
+                    <div className="text-xs opacity-80">Active Days</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">{formatPrice(Math.round(avgPerMeal), countryCode)}</div>
+                    <div className="text-xs opacity-80">Avg per Meal</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">{formatPrice(Math.round(totalSpent), countryCode)}</div>
+                    <div className="text-xs opacity-80">Total Spent</div>
+                  </div>
+                </div>
+              </div>
+
+              {estimatedSavings > 0 && (
+                <div className="rounded-2xl border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 p-4 text-center">
+                  <p className="text-xs text-green-600 dark:text-green-400 font-semibold uppercase tracking-wide">Estimated Savings</p>
+                  <p className="text-3xl font-bold text-green-700 dark:text-green-300 mt-1">
+                    {formatPrice(Math.round(estimatedSavings), countryCode)}
+                  </p>
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                    By choosing budget-friendly restaurants over typical dining
+                  </p>
+                </div>
+              )}
+
+              <div className="rounded-xl bg-[var(--vb-bg-secondary)] p-4 text-center">
+                <p className="text-sm text-[var(--vb-text-secondary)]">
+                  {totalMeals === 0
+                    ? 'Start logging meals in the Budget tab to see your stats!'
+                    : `Keep tracking to unlock more insights about your dining habits.`}
+                </p>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       <BottomNav />

@@ -6,6 +6,9 @@ import { Heart } from 'lucide-react';
 interface Props {
   restaurantId: string;
   restaurantName?: string;
+  cuisine?: string;
+  price?: string;
+  score?: number;
   size?: number;
 }
 
@@ -19,12 +22,13 @@ function getFavorites(): string[] {
   } catch { return []; }
 }
 
-function saveFavorite(id: string, name?: string) {
+function saveFavorite(id: string, name?: string, cuisine?: string, price?: string, score?: number) {
   try {
     const saved = localStorage.getItem('valuebite-favorites');
-    const favorites: Array<{ id: string; name: string }> = saved ? JSON.parse(saved) : [];
-    if (!favorites.find((f: any) => (typeof f === 'string' ? f : f.id) === id)) {
-      favorites.push({ id, name: name || 'Restaurant' });
+    const favorites: Array<{ id: string; name: string; cuisine?: string; price?: string; score?: number }> = saved ? JSON.parse(saved) : [];
+    const existing = favorites.findIndex((f: any) => (typeof f === 'string' ? f : f.id) === id);
+    if (existing === -1) {
+      favorites.push({ id, name: name || 'Restaurant', cuisine, price, score });
       localStorage.setItem('valuebite-favorites', JSON.stringify(favorites));
     }
   } catch {}
@@ -39,7 +43,7 @@ function removeFavorite(id: string) {
   } catch {}
 }
 
-export function FavoriteButton({ restaurantId, restaurantName, size = 22 }: Props) {
+export function FavoriteButton({ restaurantId, restaurantName, cuisine, price, score, size = 22 }: Props) {
   const [favorited, setFavorited] = useState(false);
   const [animating, setAnimating] = useState(false);
 
@@ -51,7 +55,7 @@ export function FavoriteButton({ restaurantId, restaurantName, size = 22 }: Prop
     const next = !favorited;
     setFavorited(next);
     if (next) {
-      saveFavorite(restaurantId, restaurantName);
+      saveFavorite(restaurantId, restaurantName, cuisine, price, score);
       setAnimating(true);
       setTimeout(() => setAnimating(false), 300);
     } else {

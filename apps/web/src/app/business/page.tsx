@@ -18,6 +18,20 @@ const DEMO_STATS = {
 export default function BusinessPortal() {
   return (
     <div className="min-h-screen bg-[var(--vb-bg)]">
+      {/* Coming Soon overlay */}
+      <div className="fixed inset-0 z-50 bg-[var(--vb-bg)] flex items-center justify-center">
+        <div className="text-center px-8">
+          <Store size={64} className="mx-auto mb-4 text-[var(--vb-primary)] opacity-60" />
+          <h1 className="text-2xl font-bold mb-2">Business Portal</h1>
+          <p className="text-[var(--vb-text-secondary)] mb-6">
+            Promote your restaurant to budget-conscious diners.<br/>
+            Coming soon!
+          </p>
+          <Link href="/" className="inline-block px-6 py-2.5 bg-[var(--vb-primary)] text-white rounded-xl font-semibold text-sm">
+            Back to Home
+          </Link>
+        </div>
+      </div>
       {/* Header */}
       <div className="bg-gradient-to-r from-green-600 to-emerald-700 text-white">
         <div className="max-w-4xl mx-auto px-4 py-8">

@@ -34,6 +34,22 @@ export const REGIONS: CountryConfig[] = [
   ]},
 ];
 
+/**
+ * Find the nearest supported city based on coordinates
+ */
+export function findNearestCity(lat: number, lng: number): { city: CityConfig; country: CountryConfig } | null {
+  let best: { city: CityConfig; country: CountryConfig; dist: number } | null = null;
+  for (const country of REGIONS) {
+    for (const city of country.cities) {
+      const dist = Math.sqrt((lat - city.lat) ** 2 + (lng - city.lng) ** 2);
+      if (!best || dist < best.dist) {
+        best = { city, country, dist };
+      }
+    }
+  }
+  return best ? { city: best.city, country: best.country } : null;
+}
+
 export const LANGUAGES = [
   { code: 'en', name: 'English', native: 'English' },
   { code: 'ja', name: 'Japanese', native: '日本語' },

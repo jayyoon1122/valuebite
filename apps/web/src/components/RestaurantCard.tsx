@@ -3,7 +3,36 @@
 import Link from 'next/link';
 import type { RestaurantListItem } from '@valuebite/types';
 import { formatPrice, formatDistance } from '@valuebite/utils';
-import { Star, MapPin, Clock, ThumbsUp } from 'lucide-react';
+import { Star, MapPin, ThumbsUp } from 'lucide-react';
+
+// Map cuisine types to emoji thumbnails for visual scanning
+const CUISINE_EMOJI: Record<string, string> = {
+  japanese: '🍣', sushi: '🍣', ramen: '🍜', udon: '🍜', soba: '🍜',
+  yakitori: '🍢', tempura: '🍤', tonkatsu: '🥩', donburi: '🍚', gyudon: '🍚',
+  teishoku: '🍱', izakaya: '🍶', okonomiyaki: '🥞', takoyaki: '🐙',
+  onigiri: '🍙', bento: '🍱', kaiseki: '🍽', teppanyaki: '🥩',
+  chinese: '🥡', korean: '🍖', thai: '🍛', indian: '🍛', curry: '🍛',
+  vietnamese: '🍲', italian: '🍝', pizza: '🍕', french: '🥐',
+  mexican: '🌮', american: '🍔', burger: '🍔', steak: '🥩',
+  seafood: '🦐', mediterranean: '🥙', greek: '🥗', turkish: '🥙',
+  bakery: '🥖', cafe: '☕', dessert: '🍰', ice_cream: '🍦',
+  bbq: '🍖', grill: '🍖', chicken: '🍗', sandwich: '🥪',
+  noodle: '🍜', dumpling: '🥟', dim_sum: '🥟', tapas: '🫒',
+  nepali: '🍛', indonesian: '🍛', malaysian: '🍛',
+  fast_food: '🍟', family_restaurant: '🍽', yoshinoya: '🍚',
+  default: '🍽',
+};
+
+function getCuisineEmoji(cuisineTypes?: string[]): string {
+  if (!cuisineTypes?.length) return CUISINE_EMOJI.default;
+  for (const c of cuisineTypes) {
+    const key = c.toLowerCase().replace(/[_\s]/g, '');
+    for (const [k, v] of Object.entries(CUISINE_EMOJI)) {
+      if (key.includes(k) || k.includes(key)) return v;
+    }
+  }
+  return CUISINE_EMOJI.default;
+}
 
 interface Props {
   restaurant: RestaurantListItem;
@@ -63,11 +92,14 @@ export function RestaurantCard({ restaurant, countryCode = 'JP' }: Props) {
       className="block bg-[var(--vb-bg)] border border-[var(--vb-border)] rounded-xl p-4 hover:shadow-md transition-shadow"
     >
       <div className="flex justify-between items-start mb-2">
+        <div className="w-10 h-10 rounded-lg bg-[var(--vb-bg-secondary)] flex items-center justify-center text-xl mr-3 shrink-0">
+          {getCuisineEmoji(restaurant.cuisineType)}
+        </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-base truncate">{name}</h3>
           <div className="flex items-center gap-2 mt-1 text-sm text-[var(--vb-text-secondary)]">
             {restaurant.cuisineType?.filter(c => !['meal_takeaway','meal_delivery','store','lodging','bar','night_club','cafe','bakery','supermarket'].includes(c)).slice(0, 2).map((c) => (
-              <span key={c} className="capitalize">{c}</span>
+              <span key={c} className="capitalize">{c.replace(/_/g, ' ')}</span>
             ))}
           </div>
         </div>

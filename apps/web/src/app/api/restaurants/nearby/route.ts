@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/restaurants?is_active=eq.true&lat=gte.${lat - latRange}&lat=lte.${lat + latRange}&lng=gte.${lng - lngRange}&lng=lte.${lng + lngRange}&select=id,name,slug,lat,lng,cuisine_type,avg_meal_price,price_currency,value_score,taste_score,portion_score,total_reviews,is_chain,phone,website&order=value_score.desc.nullslast&limit=100`,
+      `${SUPABASE_URL}/rest/v1/restaurants?is_active=eq.true&lat=gte.${lat - latRange}&lat=lte.${lat + latRange}&lng=gte.${lng - lngRange}&lng=lte.${lng + lngRange}&select=id,name,slug,lat,lng,cuisine_type,avg_meal_price,price_currency,value_score,taste_score,portion_score,total_reviews,is_chain,phone,website,purpose_scores,place_attributes&order=value_score.desc.nullslast&limit=100`,
       {
         headers: {
           'apikey': SUPABASE_KEY,
@@ -44,6 +44,8 @@ export async function GET(request: NextRequest) {
       portionScore: r.portion_score ? parseFloat(String(r.portion_score)) : undefined,
       totalReviews: r.total_reviews || 0,
       isChain: r.is_chain || false,
+      purposeScores: r.purpose_scores || {},
+      placeAttributes: r.place_attributes || {},
       distance: Math.round(haversine(lat, lng, r.lat, r.lng)),
       freshnessIndicator: { label: 'Recently Verified', color: 'green', icon: 'check' },
     }));

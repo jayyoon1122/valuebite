@@ -13,3 +13,17 @@ ios/
 android/
 *.tsbuildinfo
 .vercel
+.env*.local
+
+# Personal notes & screenshots (not part of source)
+FYI/
+
+# Google Places API raw data dumps (not part of source)
+*-places.json
+scripts/*-places.json
+parsed_restaurants.json
+
+# Build / package outputs
+*.aab
+*.apk
+*.keystore

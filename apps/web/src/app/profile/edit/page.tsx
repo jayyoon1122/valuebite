@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { BottomNav } from '@/components/BottomNav';
 import { useAppStore } from '@/lib/store';
 import { LANGUAGES } from '@/lib/regions';
+import { loadProfile, saveProfile } from '@/lib/user-profile';
 import {
   ArrowLeft, Camera, User, MapPin, Languages, Utensils, Wallet, Save,
 } from 'lucide-react';
@@ -15,15 +16,30 @@ const DIETARY_OPTIONS = [
 ];
 
 export default function EditProfilePage() {
-  const { locale, cityName } = useAppStore();
+  const { locale, cityName, countryCode, setLocale } = useAppStore();
+  const currencySymbols: Record<string, string> = { JP: '¥', US: '$', GB: '£', SG: 'S$', HK: 'HK$', DE: '€', AU: 'A$', CA: 'C$' };
+  const currencySymbol = currencySymbols[countryCode] || '$';
 
-  const [displayName, setDisplayName] = useState('TokyoFoodie');
+  const [displayName, setDisplayName] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [homeCity, setHomeCity] = useState(cityName || 'Tokyo');
+  const [homeCity, setHomeCity] = useState(cityName || '');
   const [preferredLanguage, setPreferredLanguage] = useState(locale || 'en');
   const [dietaryPreferences, setDietaryPreferences] = useState<string[]>([]);
-  const [monthlyBudget, setMonthlyBudget] = useState('50000');
+  const [monthlyBudget, setMonthlyBudget] = useState('');
   const [saved, setSaved] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  // Load saved profile on mount
+  useEffect(() => {
+    const p = loadProfile();
+    if (p.displayName) setDisplayName(p.displayName);
+    if (p.homeCity) setHomeCity(p.homeCity);
+    if (p.preferredLanguage) setPreferredLanguage(p.preferredLanguage);
+    if (p.dietaryPreferences.length) setDietaryPreferences(p.dietaryPreferences);
+    if (p.monthlyBudget) setMonthlyBudget(p.monthlyBudget);
+    if (p.avatarDataUrl) setAvatarPreview(p.avatarDataUrl);
+    setLoaded(true);
+  }, []);
 
   const currentLang = LANGUAGES.find((l) => l.code === preferredLanguage);
 
@@ -45,6 +61,15 @@ export default function EditProfilePage() {
   };
 
   const handleSave = () => {
+    saveProfile({
+      displayName,
+      homeCity,
+      preferredLanguage,
+      dietaryPreferences,
+      monthlyBudget,
+      avatarDataUrl: avatarPreview,
+    });
+    if (preferredLanguage !== locale) setLocale(preferredLanguage);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -155,7 +180,7 @@ export default function EditProfilePage() {
             Monthly Dining Budget
           </label>
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--vb-text-secondary)]">¥</span>
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--vb-text-secondary)]">{currencySymbol}</span>
             <input
               type="number"
               value={monthlyBudget}

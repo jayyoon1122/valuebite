@@ -46,6 +46,7 @@ export function RegionLanguageSelector() {
       >
         <Globe size={16} />
         <span className="hidden sm:inline text-xs font-medium">{cityName || 'Tokyo'}</span>
+        <span className="hidden sm:inline text-xs text-[var(--vb-text-secondary)]">·</span>
         <span className="text-xs text-[var(--vb-text-secondary)]">{currentLang?.native?.slice(0, 3) || 'EN'}</span>
         <ChevronDown size={14} className={`transition ${open ? 'rotate-180' : ''}`} />
       </button>

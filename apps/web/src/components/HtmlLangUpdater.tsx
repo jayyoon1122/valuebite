@@ -34,6 +34,21 @@ export function HtmlLangUpdater() {
     document.documentElement.classList.toggle('light', !darkMode);
   }, [darkMode]);
 
+  // Listen for system dark mode changes (only applies if user hasn't manually toggled)
+  useEffect(() => {
+    const mq = window.matchMedia?.('(prefers-color-scheme: dark)');
+    if (!mq) return;
+    const handler = (e: MediaQueryListEvent) => {
+      // Only auto-follow if user hasn't explicitly saved a preference
+      const saved = localStorage.getItem('valuebite-prefs');
+      if (!saved) {
+        useAppStore.getState().setDarkMode(e.matches);
+      }
+    };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
   // Geolocation — detect nearest city on every visit
   useEffect(() => {
     if (typeof window === 'undefined') return;

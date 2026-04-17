@@ -1,15 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { ThumbsUp, ThumbsDown, Check, DollarSign } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Check } from 'lucide-react';
+import { getDeviceFingerprint } from '@/lib/fingerprint';
 
 interface Props {
   restaurantId: string;
   currency?: string;
-  onSubmit?: (data: { wasWorthIt: boolean; pricePaid?: number }) => void;
 }
 
-export function QuickRating({ restaurantId, currency = '¥', onSubmit }: Props) {
+export function QuickRating({ restaurantId, currency = '¥' }: Props) {
   const [step, setStep] = useState<'vote' | 'price' | 'done'>('vote');
   const [worthIt, setWorthIt] = useState<boolean | null>(null);
   const [pricePaid, setPricePaid] = useState('');
@@ -19,13 +19,25 @@ export function QuickRating({ restaurantId, currency = '¥', onSubmit }: Props) 
     setStep('price');
   };
 
-  const handleSubmit = () => {
-    const data = {
-      wasWorthIt: worthIt!,
-      pricePaid: pricePaid ? parseFloat(pricePaid) : undefined,
-    };
-    onSubmit?.(data);
+  const handleSubmit = async () => {
     setStep('done');
+    // Persist to Supabase via suggestions API
+    try {
+      const fingerprint = await getDeviceFingerprint();
+      await fetch('/api/suggestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          restaurant_id: restaurantId,
+          suggestion_type: 'quick_rating',
+          submitter_fingerprint: fingerprint,
+          submitter_note: JSON.stringify({
+            wasWorthIt: worthIt,
+            pricePaid: pricePaid ? parseFloat(pricePaid) : null,
+          }),
+        }),
+      });
+    } catch {}
   };
 
   if (step === 'done') {
@@ -33,7 +45,7 @@ export function QuickRating({ restaurantId, currency = '¥', onSubmit }: Props) 
       <div className="bg-green-50 dark:bg-green-950/30 rounded-xl p-4 text-center">
         <Check size={32} className="text-green-600 mx-auto mb-2" />
         <p className="font-semibold text-green-700 dark:text-green-300">Thanks for your rating!</p>
-        <p className="text-xs text-[var(--vb-text-secondary)] mt-1">+5 contribution points earned</p>
+        <p className="text-xs text-[var(--vb-text-secondary)] mt-1">Your feedback helps the community</p>
       </div>
     );
   }

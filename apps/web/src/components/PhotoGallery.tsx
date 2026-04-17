@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Camera, ImageOff } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Camera } from 'lucide-react';
 import { FullScreenPhoto } from './FullScreenPhoto';
 
 interface Photo {
@@ -17,7 +17,41 @@ interface Props {
   mainPhoto?: string;
 }
 
-export function PhotoGallery({ restaurantName, realPhotos }: Props) {
+// Cuisine-themed gradient fallbacks (avoid empty placeholder feeling)
+const CUISINE_THEME: Record<string, { emoji: string; gradient: string }> = {
+  japanese: { emoji: '🍣', gradient: 'from-rose-400 via-pink-500 to-red-500' },
+  sushi: { emoji: '🍣', gradient: 'from-rose-400 via-pink-500 to-red-500' },
+  ramen: { emoji: '🍜', gradient: 'from-amber-400 via-orange-500 to-red-500' },
+  udon: { emoji: '🍜', gradient: 'from-amber-300 via-yellow-500 to-orange-500' },
+  yakitori: { emoji: '🍢', gradient: 'from-amber-500 via-orange-600 to-red-600' },
+  korean: { emoji: '🍖', gradient: 'from-red-500 via-rose-600 to-pink-600' },
+  chinese: { emoji: '🥡', gradient: 'from-red-400 via-rose-500 to-pink-500' },
+  thai: { emoji: '🍛', gradient: 'from-green-400 via-emerald-500 to-teal-500' },
+  indian: { emoji: '🍛', gradient: 'from-orange-400 via-amber-500 to-yellow-500' },
+  italian: { emoji: '🍝', gradient: 'from-green-500 via-yellow-400 to-red-500' },
+  pizza: { emoji: '🍕', gradient: 'from-red-400 via-orange-500 to-yellow-500' },
+  mexican: { emoji: '🌮', gradient: 'from-yellow-400 via-orange-500 to-red-500' },
+  burger: { emoji: '🍔', gradient: 'from-yellow-500 via-amber-600 to-red-600' },
+  american: { emoji: '🍔', gradient: 'from-blue-500 via-indigo-600 to-purple-600' },
+  cafe: { emoji: '☕', gradient: 'from-amber-700 via-yellow-800 to-stone-700' },
+  bakery: { emoji: '🥖', gradient: 'from-amber-300 via-orange-400 to-yellow-500' },
+  vietnamese: { emoji: '🍲', gradient: 'from-emerald-400 via-green-500 to-teal-600' },
+  seafood: { emoji: '🦐', gradient: 'from-blue-400 via-cyan-500 to-teal-500' },
+  default: { emoji: '🍽', gradient: 'from-slate-500 via-gray-600 to-zinc-700' },
+};
+
+function getCuisineTheme(cuisineTypes?: string[]) {
+  if (!cuisineTypes?.length) return CUISINE_THEME.default;
+  for (const c of cuisineTypes) {
+    const key = c.toLowerCase().replace(/[_\s]/g, '');
+    for (const [k, v] of Object.entries(CUISINE_THEME)) {
+      if (key.includes(k) || k.includes(key)) return v;
+    }
+  }
+  return CUISINE_THEME.default;
+}
+
+export function PhotoGallery({ restaurantName, realPhotos, cuisineTypes }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
   const [brokenUrls, setBrokenUrls] = useState<Set<string>>(new Set());
@@ -32,10 +66,12 @@ export function PhotoGallery({ restaurantName, realPhotos }: Props) {
   const photos = (realPhotos || []).filter(p => !brokenUrls.has(p.url));
 
   if (photos.length === 0) {
+    const theme = getCuisineTheme(cuisineTypes);
     return (
-      <div className="h-48 bg-[var(--vb-bg-secondary)] flex flex-col items-center justify-center gap-2">
-        <ImageOff size={32} className="text-[var(--vb-text-secondary)] opacity-40" />
-        <p className="text-xs text-[var(--vb-text-secondary)]">Photos coming soon</p>
+      <div className={`h-64 bg-gradient-to-br ${theme.gradient} flex flex-col items-center justify-center gap-3 relative overflow-hidden`}>
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 25% 25%, white 1px, transparent 1px), radial-gradient(circle at 75% 75%, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        <span className="text-7xl drop-shadow-lg" role="img" aria-label="Cuisine">{theme.emoji}</span>
+        <p className="text-sm text-white/90 font-medium drop-shadow">{restaurantName}</p>
       </div>
     );
   }

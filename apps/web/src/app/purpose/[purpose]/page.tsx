@@ -11,7 +11,9 @@ import { ArrowLeft } from 'lucide-react';
 const EXCLUDE_CHAINS_FOR = new Set(['date_night', 'special_occasion']);
 
 export default function PurposeDetailPage({ params }: { params: Promise<{ purpose: string }> }) {
-  const { purpose } = use(params);
+  const rawPurpose = use(params).purpose;
+  // Normalize slug — accept both daily-eats and daily_eats formats
+  const purpose = rawPurpose.replace(/-/g, '_');
   const { cityId, countryCode, locale, showChains, userLat, userLng } = useAppStore();
   const [allRestaurants, setAllRestaurants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,11 +33,16 @@ export default function PurposeDetailPage({ params }: { params: Promise<{ purpos
       .catch(() => setLoading(false));
   }, [userLat, userLng]);
 
-  // Filter by price bracket
+  // Filter by price bracket (min AND max) + purpose score threshold
   let filtered = allRestaurants.filter((r) => {
     if (!bracket) return true;
     const price = r.avgMealPrice || 0;
-    return price <= bracket.maxPrice;
+    if (price <= 0) return false;
+    const min = bracket.minPrice || 0;
+    // Price must be in range, OR restaurant has a strong purpose score for this category
+    const purposeScore = r.purposeScores?.[purpose] || 0;
+    const inPriceRange = price >= min && price <= bracket.maxPrice;
+    return inPriceRange || purposeScore >= 0.4;
   });
 
   if (EXCLUDE_CHAINS_FOR.has(purpose)) {
@@ -45,7 +52,13 @@ export default function PurposeDetailPage({ params }: { params: Promise<{ purpos
     filtered = filtered.filter((r) => !r.isChain);
   }
 
-  filtered.sort((a, b) => (b.valueScore || 0) - (a.valueScore || 0));
+  // Sort by purpose score (primary), then value score (secondary)
+  filtered.sort((a, b) => {
+    const scoreA = a.purposeScores?.[purpose] || 0;
+    const scoreB = b.purposeScores?.[purpose] || 0;
+    if (scoreB !== scoreA) return scoreB - scoreA;
+    return (b.valueScore || 0) - (a.valueScore || 0);
+  });
 
   const label = bracket?.purposeLabel?.[locale] || bracket?.purposeLabel?.en || purpose;
 

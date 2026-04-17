@@ -33,6 +33,12 @@ interface AppState {
   setDarkMode: (on: boolean) => void;
 }
 
+// Detect system preference for dark mode
+function getSystemDarkMode(): boolean {
+  if (typeof window === 'undefined') return true;
+  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? true;
+}
+
 // Load persisted state from localStorage
 function loadPersistedState(): Partial<AppState> {
   if (typeof window === 'undefined') return {};
@@ -106,7 +112,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   // UI
   isMapView: true,
   toggleMapView: () => set((s) => ({ isMapView: !s.isMapView })),
-  darkMode: persisted.darkMode ?? true, // default dark
+  darkMode: persisted.darkMode ?? getSystemDarkMode(), // auto-detect from system preference
   setDarkMode: (on) => {
     set({ darkMode: on });
     persistState({ ...get(), darkMode: on });

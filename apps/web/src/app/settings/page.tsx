@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
@@ -9,7 +9,7 @@ import { BottomNav } from '@/components/BottomNav';
 import {
   ArrowLeft, Globe, Languages, Bell, Moon, Eye, Shield, HelpCircle,
   MessageSquare, Star, ExternalLink, ChevronRight, Smartphone, Trash2,
-  X, MapPin, Check, ChevronDown,
+  X, MapPin, Check, ChevronDown, Wallet,
 } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -22,6 +22,16 @@ export default function SettingsPage() {
   const [priceAlerts, setPriceAlerts] = useState(true);
   const [weeklyReport, setWeeklyReport] = useState(false);
   const [showNativeAds, setShowNativeAds] = useState(true);
+
+  useEffect(() => {
+    const pn = localStorage.getItem('vb-push-notifications');
+    if (pn !== null) setPushNotifications(pn === 'true');
+    const pa = localStorage.getItem('vb-price-alerts');
+    if (pa !== null) setPriceAlerts(pa === 'true');
+    setWeeklyReport(localStorage.getItem('vb-weekly-report') === 'true');
+    const na = localStorage.getItem('vb-native-ads');
+    if (na !== null) setShowNativeAds(na === 'true');
+  }, []);
 
   const currentLang = LANGUAGES.find((l) => l.code === locale);
 
@@ -42,17 +52,17 @@ export default function SettingsPage() {
   function SettingRow({ icon: Icon, label, value, onClick, trailing }: {
     icon: any; label: string; value?: string; onClick?: () => void; trailing?: React.ReactNode;
   }) {
-    return (
-      <button
-        onClick={onClick}
-        className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-[var(--vb-bg-secondary)] transition"
-      >
+    const inner = (
+      <>
         <Icon size={20} className="text-[var(--vb-text-secondary)] shrink-0" />
         <span className="flex-1 text-left text-sm">{label}</span>
         {value && <span className="text-sm text-[var(--vb-text-secondary)]">{value}</span>}
         {trailing || (onClick && <ChevronRight size={16} className="text-[var(--vb-text-secondary)]" />)}
-      </button>
+      </>
     );
+    const cls = "w-full flex items-center gap-3 px-4 py-3.5 hover:bg-[var(--vb-bg-secondary)] transition";
+    if (trailing) return <div className={cls}>{inner}</div>;
+    return <button onClick={onClick} className={cls}>{inner}</button>;
   }
 
   return (
@@ -80,6 +90,11 @@ export default function SettingsPage() {
           <h2 className="text-xs font-semibold text-[var(--vb-text-secondary)] uppercase tracking-wider">Preferences</h2>
         </div>
         <SettingRow
+          icon={Wallet} label="Dining Budget"
+          value="Track & manage"
+          onClick={() => router.push('/profile')}
+        />
+        <SettingRow
           icon={Moon} label="Dark Mode"
           trailing={<Toggle on={darkMode} onToggle={() => setDarkMode(!darkMode)} />}
         />
@@ -95,15 +110,15 @@ export default function SettingsPage() {
         </div>
         <SettingRow
           icon={Bell} label="Push Notifications"
-          trailing={<Toggle on={pushNotifications} onToggle={() => setPushNotifications(!pushNotifications)} />}
+          trailing={<Toggle on={pushNotifications} onToggle={() => { const v = !pushNotifications; setPushNotifications(v); localStorage.setItem('vb-push-notifications', String(v)); }} />}
         />
         <SettingRow
           icon={Bell} label="Price Change Alerts"
-          trailing={<Toggle on={priceAlerts} onToggle={() => setPriceAlerts(!priceAlerts)} />}
+          trailing={<Toggle on={priceAlerts} onToggle={() => { const v = !priceAlerts; setPriceAlerts(v); localStorage.setItem('vb-price-alerts', String(v)); }} />}
         />
         <SettingRow
           icon={MessageSquare} label="Weekly Value Report"
-          trailing={<Toggle on={weeklyReport} onToggle={() => setWeeklyReport(!weeklyReport)} />}
+          trailing={<Toggle on={weeklyReport} onToggle={() => { const v = !weeklyReport; setWeeklyReport(v); localStorage.setItem('vb-weekly-report', String(v)); }} />}
         />
         <div className="border-b border-[var(--vb-border)] mx-4" />
 
@@ -113,7 +128,7 @@ export default function SettingsPage() {
         </div>
         <SettingRow
           icon={Eye} label="Personalized Ads"
-          trailing={<Toggle on={showNativeAds} onToggle={() => setShowNativeAds(!showNativeAds)} />}
+          trailing={<Toggle on={showNativeAds} onToggle={() => { const v = !showNativeAds; setShowNativeAds(v); localStorage.setItem('vb-native-ads', String(v)); }} />}
         />
         <SettingRow icon={Shield} label="Privacy Policy" onClick={() => router.push('/privacy')} />
         <SettingRow icon={Shield} label="Terms of Service" onClick={() => router.push('/terms')} />
@@ -129,15 +144,23 @@ export default function SettingsPage() {
         <SettingRow icon={Smartphone} label="App Version" value="1.0.0" />
         <div className="border-b border-[var(--vb-border)] mx-4" />
 
-        {/* Account */}
+        {/* Data */}
         <div className="px-4 pt-4 pb-1">
-          <h2 className="text-xs font-semibold text-[var(--vb-text-secondary)] uppercase tracking-wider">Account</h2>
+          <h2 className="text-xs font-semibold text-[var(--vb-text-secondary)] uppercase tracking-wider">Data</h2>
         </div>
-        <SettingRow icon={ExternalLink} label="Sign Out" onClick={() => { if (confirm('Are you sure you want to sign out?')) { alert('Signed out successfully.'); } }} />
-        <button className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-red-50 dark:hover:bg-red-950/20 transition">
-          <Trash2 size={20} className="text-red-500 shrink-0" />
-          <span className="text-sm text-red-500">Delete Account</span>
-        </button>
+        <SettingRow
+          icon={Trash2}
+          label="Clear Local Data"
+          onClick={() => {
+            if (confirm('This will clear your favorites, budget, and profile data from this device. Are you sure?')) {
+              localStorage.removeItem('valuebite-favorites');
+              localStorage.removeItem('valuebite-profile');
+              localStorage.removeItem('valuebite-user-stats');
+              localStorage.removeItem('valuebite-prefs');
+              alert('Local data cleared. Refresh to see changes.');
+            }
+          }}
+        />
 
         <div className="px-4 py-6 text-center">
           <p className="text-xs text-[var(--vb-text-secondary)]">ValueBite v1.0.0</p>

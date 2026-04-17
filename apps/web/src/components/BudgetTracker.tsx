@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { CreditCard, TrendingDown, TrendingUp, Plus, Check, Trash2 } from 'lucide-react';
 import { formatPrice } from '@valuebite/utils';
+import { loadProfile } from '@/lib/user-profile';
 
 interface Props {
   countryCode?: string;
-  currency?: string;
 }
 
 interface Expense {
@@ -14,10 +14,20 @@ interface Expense {
   restaurant: string;
   amount: number;
   date: string;
+  countryCode?: string;
 }
 
 const STORAGE_KEY = 'valuebite-expenses';
-const BUDGET_KEY = 'valuebite-budget';
+
+// Currency symbol lookup by country code
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  JP: '¥', US: '$', GB: '£', SG: 'S$', HK: 'HK$', DE: '€', AU: 'A$', CA: 'C$',
+};
+
+// Sensible default monthly budgets by country code
+const DEFAULT_BUDGETS: Record<string, number> = {
+  JP: 30000, US: 300, GB: 200, SG: 300, HK: 2000, DE: 250, AU: 350, CA: 350,
+};
 
 function loadExpenses(): Expense[] {
   if (typeof window === 'undefined') return [];
@@ -31,18 +41,34 @@ function saveExpenses(expenses: Expense[]) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses)); } catch {}
 }
 
-export function BudgetTracker({ countryCode = 'JP', currency = '¥' }: Props) {
+export function BudgetTracker({ countryCode = 'JP' }: Props) {
+  const currencySymbol = CURRENCY_SYMBOLS[countryCode] || '$';
+  const defaultBudget = DEFAULT_BUDGETS[countryCode] || 300;
+
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [budget, setBudget] = useState(30000);
+  const [budget, setBudget] = useState(defaultBudget);
   const [showLogForm, setShowLogForm] = useState(false);
   const [logAmount, setLogAmount] = useState('');
   const [logRestaurant, setLogRestaurant] = useState('');
 
   useEffect(() => {
     setExpenses(loadExpenses());
+    // Read budget from user profile (set via /profile/edit)
+    const profile = loadProfile();
+    if (profile.monthlyBudget) {
+      const parsed = parseInt(profile.monthlyBudget);
+      if (!isNaN(parsed) && parsed > 0) {
+        setBudget(parsed);
+        return;
+      }
+    }
+    // Fallback to legacy key
     try {
-      const savedBudget = localStorage.getItem(BUDGET_KEY);
-      if (savedBudget) setBudget(parseInt(savedBudget));
+      const savedBudget = localStorage.getItem('valuebite-budget');
+      if (savedBudget) {
+        const parsed = parseInt(savedBudget);
+        if (!isNaN(parsed) && parsed > 0) setBudget(parsed);
+      }
     } catch {}
   }, []);
 
@@ -65,6 +91,7 @@ export function BudgetTracker({ countryCode = 'JP', currency = '¥' }: Props) {
       restaurant: logRestaurant.trim(),
       amount,
       date: new Date().toISOString().split('T')[0],
+      countryCode,
     };
 
     const updated = [newExpense, ...expenses];
@@ -81,8 +108,21 @@ export function BudgetTracker({ countryCode = 'JP', currency = '¥' }: Props) {
     saveExpenses(updated);
   };
 
+  // Check if any expenses were logged in a different currency
+  const mixedCurrency = expenses.some(e => e.countryCode && e.countryCode !== countryCode);
+
   return (
     <div className="space-y-4">
+      {/* Currency mismatch notice */}
+      {mixedCurrency && (
+        <div className="px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm">
+          <p className="font-medium text-amber-800 dark:text-amber-300">Mixed currencies detected</p>
+          <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
+            Some expenses were logged in a different region. Totals may not reflect accurate conversion.
+          </p>
+        </div>
+      )}
+
       {/* Budget overview card */}
       <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-5 text-white">
         <div className="flex items-center justify-between mb-3">
@@ -139,7 +179,7 @@ export function BudgetTracker({ countryCode = 'JP', currency = '¥' }: Props) {
             className="w-full px-3 py-2 rounded-lg bg-[var(--vb-bg)] border border-[var(--vb-border)] text-sm"
           />
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--vb-text-secondary)]">{currency}</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--vb-text-secondary)]">{currencySymbol}</span>
             <input
               type="number"
               value={logAmount}

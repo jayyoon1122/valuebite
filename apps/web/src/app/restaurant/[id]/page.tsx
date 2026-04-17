@@ -10,33 +10,62 @@ import { GoogleReviewSection } from '@/components/GoogleReviewCard';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { PhotoGallery } from '@/components/PhotoGallery';
 import { fetchRestaurantDetail } from '@/lib/data';
+import { PriceSuggestionModal } from '@/components/PriceSuggestionModal';
+import { useAppStore } from '@/lib/store';
+import { formatDistance } from '@valuebite/utils';
 import {
   ArrowLeft, MapPin, MessageSquare, PenLine, Clock, Globe, Phone,
   TrendingDown, Star, ChevronDown, ChevronUp,
-  Utensils, Camera,
+  Utensils, Camera, DollarSign, Navigation,
 } from 'lucide-react';
+
+function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 // Menu items will come from the menu_items table (populated by OCR pipeline)
 // No client-side review parsing — too inaccurate
 
-// Get typical meal price — median of main dishes (not skewed by cheap sides/drinks)
+// Get typical meal price — median of real main dishes, with price-gap detection
 function getTypicalMealPrice(menuItems: any[]): number | null {
   if (menuItems.length === 0) return null;
   const mealItems = menuItems.filter((m: any) => ['main', 'set_meal', 'combo'].includes(m.category));
-  const prices = (mealItems.length >= 3 ? mealItems : menuItems)
+  let prices = (mealItems.length >= 1 ? mealItems : menuItems)
     .map((m: any) => m.price).filter((p: number) => p > 0).sort((a: number, b: number) => a - b);
   if (prices.length === 0) return null;
+  // Price-gap detection: if a jump > 2.5x exists, items above are the real meals
+  if (prices.length > 1) {
+    for (let i = prices.length - 2; i >= 0; i--) {
+      if (prices[i + 1] > prices[i] * 2.5) {
+        prices = prices.slice(i + 1);
+        break;
+      }
+    }
+  }
   const mid = Math.floor(prices.length / 2);
   return prices.length % 2 ? prices[mid] : (prices[mid - 1] + prices[mid]) / 2;
 }
 
+// Currency-specific budget benchmarks (typical budget meal in local currency)
+const BUDGET_BENCHMARKS: Record<string, number> = {
+  JPY: 1000, USD: 15, GBP: 10, SGD: 12, HKD: 60, EUR: 12, AUD: 15, CAD: 15,
+};
+
+function getBenchmark(currency: string): number {
+  return BUDGET_BENCHMARKS[currency] || 15;
+}
+
 // Compute value verdict — uses typical meal price (median of mains) when available
-function getValueVerdict(valueScore: number | undefined, avgRating: number, totalReviews: number, menuItems: any[]) {
+function getValueVerdict(valueScore: number | undefined, avgRating: number, totalReviews: number, menuItems: any[], currency: string) {
   const typicalPrice = getTypicalMealPrice(menuItems);
+  const benchmark = getBenchmark(currency);
 
   if (typicalPrice && menuItems.length >= 3) {
-    // NYC budget benchmark: $15 typical meal
-    const priceRatio = typicalPrice / 15;
+    const priceRatio = typicalPrice / benchmark;
 
     if (priceRatio <= 0.7 && avgRating >= 4.0 && totalReviews >= 50)
       return { label: 'Excellent Value', color: 'text-green-500', bg: 'bg-green-500/10', icon: '🏆', desc: 'High quality at a great price' };
@@ -60,7 +89,9 @@ function getValueVerdict(valueScore: number | undefined, avgRating: number, tota
 
 export default function RestaurantPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const { userLat, userLng } = useAppStore();
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showPriceSuggestion, setShowPriceSuggestion] = useState(false);
   const [showHours, setShowHours] = useState(false);
   const [realPhotos, setRealPhotos] = useState<any[] | null>(null);
   const [realGoogleReviews, setRealGoogleReviews] = useState<any | null>(null);
@@ -109,10 +140,17 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
   const priceCountry = currencyMap[restaurant.priceCurrency || 'JPY'] || 'JP';
   const price = restaurant.avgMealPrice ? formatPrice(restaurant.avgMealPrice, priceCountry) : '';
   const totalReviewCount = realGoogleReviews?.totalReviews || restaurant?.totalReviews || 0;
-  const avgRating = realGoogleReviews?.avgRating || (restaurant.valueScore ? restaurant.valueScore / 0.9 : 0);
+  const avgRating = realGoogleReviews?.avgRating || (restaurant.valueScore ? Math.min(restaurant.valueScore, 5.0) : 0);
   const currencySymbol = restaurant.priceCurrency === 'JPY' ? '¥' : restaurant.priceCurrency === 'USD' ? '$' : restaurant.priceCurrency === 'GBP' ? '£' : restaurant.priceCurrency === 'EUR' ? '€' : '$';
 
-  const verdict = getValueVerdict(restaurant.valueScore, avgRating, totalReviewCount, menuItems);
+  const distanceKm = restaurant.lat && restaurant.lng
+    ? haversineDistance(userLat, userLng, restaurant.lat, restaurant.lng)
+    : null;
+  const directionsUrl = restaurant.lat && restaurant.lng
+    ? `https://www.google.com/maps/dir/?api=1&destination=${restaurant.lat},${restaurant.lng}`
+    : null;
+
+  const verdict = getValueVerdict(restaurant.valueScore, avgRating, totalReviewCount, menuItems, restaurant.priceCurrency || 'USD');
   // menuItems comes from DB (populated by OCR pipeline)
 
   // Cuisine types — filter noise
@@ -166,7 +204,13 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
             <ArrowLeft size={20} />
           </Link>
           <h1 className="font-semibold text-base truncate flex-1">{name}</h1>
-          <FavoriteButton restaurantId={id} />
+          <FavoriteButton
+            restaurantId={id}
+            restaurantName={name}
+            cuisine={cuisines.join(', ')}
+            price={price}
+            score={restaurant.valueScore}
+          />
         </div>
       </div>
 
@@ -174,6 +218,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
       <PhotoGallery
         restaurantName={name}
         realPhotos={realPhotos}
+        cuisineTypes={restaurant.cuisineType}
       />
 
       {/* Main Content */}
@@ -206,6 +251,12 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
             {price && <span className="font-semibold text-[var(--vb-text)]">{price}<span className="font-normal text-xs">/person</span></span>}
             {avgRating > 0 && <span className="flex items-center gap-1"><Star size={13} className="text-yellow-500 fill-yellow-500" /> {avgRating.toFixed(1)}</span>}
             {totalReviewCount > 0 && <span>{totalReviewCount.toLocaleString()} reviews</span>}
+            {distanceKm != null && (
+              <span className="flex items-center gap-1">
+                <MapPin size={13} />
+                {distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m` : `${distanceKm.toFixed(1)}km`}
+              </span>
+            )}
           </div>
         </div>
 
@@ -250,7 +301,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
             {menuItems.length >= 3 && (() => {
               const typicalPrice = getTypicalMealPrice(menuItems);
               if (!typicalPrice) return null;
-              const benchmark = 15; // NYC budget meal benchmark
+              const benchmark = getBenchmark(restaurant.priceCurrency || 'USD');
               const pctDiff = ((typicalPrice - benchmark) / benchmark) * 100;
               const isBelow = pctDiff < -5;
               const isAbove = pctDiff > 10;
@@ -259,10 +310,10 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
                 <div className="pt-2 border-t border-[var(--vb-border)]">
                   <div className={`text-xs px-3 py-2 rounded-lg ${isBelow ? 'bg-green-500/10 text-green-600' : isAbove ? 'bg-orange-500/10 text-orange-600' : 'bg-blue-500/10 text-blue-600'}`}>
                     {isBelow
-                      ? `Typical meal ${Math.abs(Math.round(pctDiff))}% below NYC budget average — great deal!`
+                      ? `Typical meal ${Math.abs(Math.round(pctDiff))}% below budget average — great deal!`
                       : isAbove
-                      ? `Typical meal ${Math.round(pctDiff)}% above NYC budget average`
-                      : 'Typical meal right at NYC budget average'}
+                      ? `Typical meal ${Math.round(pctDiff)}% above budget average`
+                      : 'Typical meal right at budget average'}
                     <span className="text-[var(--vb-text-secondary)] ml-1">
                       (median of {mealCount >= 3 ? `${mealCount} main dishes` : `${menuItems.length} items`})
                     </span>
@@ -340,8 +391,13 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
                     )}
                     <div className="divide-y divide-[var(--vb-border)]">
                       {grouped[cat].map((item: any, i: number) => {
-                        const itemName = typeof item.name === 'object' ? (item.name.en || item.name.original || '') : (item.name || '');
-                        const localName = typeof item.name === 'object' ? item.name.original : (item.nameLocal || '');
+                        const nameObj = typeof item.name === 'object' ? item.name : { en: item.name };
+                        // Use English name if available and not Korean; otherwise use ja, then original
+                        const koreanRe = /[\uac00-\ud7af]/;
+                        const enName = nameObj.en && !koreanRe.test(nameObj.en) ? nameObj.en : null;
+                        const jaName = nameObj.ja && !koreanRe.test(nameObj.ja) ? nameObj.ja : null;
+                        const itemName = enName || jaName || nameObj.original || nameObj.en || '';
+                        const localName = nameObj.original && nameObj.original !== itemName ? nameObj.original : (nameObj.ja && nameObj.ja !== itemName ? nameObj.ja : '');
                         const showLocal = localName && localName !== itemName;
                         return (
                           <div key={`menu-${cat}-${i}`} className="flex items-center justify-between px-4 py-2.5">
@@ -394,6 +450,26 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
             </a>
           )}
 
+          {/* Get Directions */}
+          {directionsUrl && (
+            <a
+              href={directionsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2.5 px-4 py-3 hover:bg-[var(--vb-bg-secondary)] transition"
+            >
+              <Navigation size={16} className="text-[var(--vb-primary)] flex-shrink-0" />
+              <span className="text-sm text-[var(--vb-primary)] font-medium">
+                Get Directions
+                {distanceKm != null && (
+                  <span className="text-[var(--vb-text-secondary)] font-normal ml-1.5">
+                    ({distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m away` : `${distanceKm.toFixed(1)}km away`})
+                  </span>
+                )}
+              </span>
+            </a>
+          )}
+
           {/* Phone */}
           {restaurant.phone && (
             <a href={`tel:${restaurant.phone}`} className="flex items-center gap-2.5 px-4 py-3 hover:bg-[var(--vb-bg-secondary)] transition">
@@ -426,6 +502,15 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
 
           <QuickRating restaurantId={id} currency={currencySymbol} />
 
+          {menuItems.length > 0 && (
+            <button
+              onClick={() => setShowPriceSuggestion(true)}
+              className="w-full py-2.5 rounded-xl border border-[var(--vb-primary)] text-[var(--vb-primary)] text-sm font-medium flex items-center justify-center gap-2 hover:bg-[var(--vb-primary)] hover:text-white transition"
+            >
+              <DollarSign size={15} /> Suggest Price Update
+            </button>
+          )}
+
           <button
             onClick={() => setShowReviewForm(!showReviewForm)}
             className="w-full py-2.5 rounded-xl border border-[var(--vb-border)] text-[var(--vb-text-secondary)] text-sm font-medium flex items-center justify-center gap-2 hover:border-[var(--vb-primary)] hover:text-[var(--vb-primary)] transition"
@@ -435,12 +520,26 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
 
           <label className="w-full py-2.5 rounded-xl border border-dashed border-[var(--vb-border)] text-[var(--vb-text-secondary)] text-sm font-medium flex items-center justify-center gap-2 hover:border-[var(--vb-primary)] hover:text-[var(--vb-primary)] transition cursor-pointer">
             <Camera size={15} /> Upload Menu Photo
-            <input type="file" accept="image/*" capture="environment" className="hidden" />
+            <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) alert(`Photo "${file.name}" received! Menu photo upload coming soon.`);
+              e.target.value = '';
+            }} />
           </label>
         </div>
 
         {showReviewForm && (
           <DetailedReviewForm restaurantId={id} restaurantName={name} currency={currencySymbol} onClose={() => setShowReviewForm(false)} />
+        )}
+
+        {showPriceSuggestion && (
+          <PriceSuggestionModal
+            restaurantId={id}
+            restaurantName={name}
+            menuItems={menuItems}
+            priceCurrency={restaurant.priceCurrency || 'USD'}
+            onClose={() => setShowPriceSuggestion(false)}
+          />
         )}
 
         {/* Freshness */}

@@ -20,6 +20,7 @@ export interface PriceBracket {
   cityName?: string;
   purposeKey: PurposeKey;
   purposeLabel: Record<string, string>;
+  minPrice?: number;
   maxPrice: number;
   icon?: string;
   description?: Record<string, string>;

@@ -62,28 +62,39 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return `${Math.floor(days / 365)}y ago`;
     }
 
-    // Format menu items with categories
+    // Format menu items — pass full name object for frontend language handling
     const formattedMenuItems = (menuItems || []).map((item: any) => ({
-      name: item.name?.en || item.name?.original || 'Unknown',
-      nameLocal: item.name?.original,
+      name: item.name || { en: 'Unknown' },
       price: parseFloat(String(item.price)),
       currency: item.currency || 'USD',
       category: item.category || 'main',
       source: item.source,
     }));
 
-    // Compute "typical meal price" from menu items
-    // Priority: median of main/set_meal/combo items (what people actually order as a meal)
-    // Fallback: median of all items (more robust than mean against cheap sides/drinks)
+    // Compute "typical meal price" — median of real main dishes
+    // Uses price-gap detection to filter out sides/toppings miscategorized as "main"
     function median(arr: number[]): number {
       const sorted = [...arr].sort((a, b) => a - b);
       const mid = Math.floor(sorted.length / 2);
       return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
     }
-    const mealItems = formattedMenuItems.filter((m: any) => ['main', 'set_meal', 'combo'].includes(m.category));
-    const mealPrices = (mealItems.length >= 3 ? mealItems : formattedMenuItems)
-      .map((m: any) => m.price).filter((p: number) => p > 0);
-    const typicalMealPrice = mealPrices.length > 0 ? median(mealPrices) : null;
+    function getMainPrices(items: any[]): number[] {
+      const mealCats = items.filter((m: any) => ['main', 'set_meal', 'combo'].includes(m.category));
+      let prices = (mealCats.length >= 1 ? mealCats : items)
+        .map((m: any) => m.price).filter((p: number) => p > 0).sort((a: number, b: number) => a - b);
+      // Price-gap detection: if a jump > 2.5x exists, items above are the real meals
+      if (prices.length > 1) {
+        for (let i = prices.length - 2; i >= 0; i--) {
+          if (prices[i + 1] > prices[i] * 2.5) {
+            prices = prices.slice(i + 1);
+            break;
+          }
+        }
+      }
+      return prices;
+    }
+    const mainPrices = getMainPrices(formattedMenuItems);
+    const typicalMealPrice = mainPrices.length > 0 ? median(mainPrices) : null;
 
     // Use real menu price if available, otherwise fall back to DB value
     const avgMealPrice = typicalMealPrice || (r.avg_meal_price ? parseFloat(String(r.avg_meal_price)) : undefined);
@@ -115,7 +126,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         photos: formattedPhotos,
         googleReviews: {
           totalReviews: r.total_reviews || 0,
-          avgRating: r.value_score ? parseFloat(String(r.value_score)) / 0.9 : 4.0,
+          avgRating: r.value_score ? Math.min(parseFloat(String(r.value_score)), 5.0) : 4.0,
           reviews: formattedReviews,
         },
       },

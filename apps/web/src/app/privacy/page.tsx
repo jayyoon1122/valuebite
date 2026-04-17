@@ -88,8 +88,8 @@ export default function PrivacyPage() {
           </ul>
           <p className="text-[var(--vb-text-secondary)]">
             To exercise these rights, contact us at{' '}
-            <a href="mailto:privacy@valuebite.app" className="text-[var(--vb-primary)] underline">
-              privacy@valuebite.app
+            <a href="mailto:economistview123@gmail.com" className="text-[var(--vb-primary)] underline">
+              economistview123@gmail.com
             </a>.
           </p>
         </section>
@@ -121,11 +121,37 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-base font-semibold">10. Contact Us</h2>
+          <h2 className="text-base font-semibold">10. Data Deletion Request</h2>
+          <p className="text-[var(--vb-text-secondary)]">
+            You can delete most of your data directly in the app: <strong>Settings → Clear Local Data</strong> removes
+            your favorites, budget, profile, and preferences from your device. To delete community posts, comments,
+            ratings, or any server-stored data tied to your device, email{' '}
+            <a href="mailto:economistview123@gmail.com?subject=ValueBite%20Data%20Deletion%20Request" className="text-[var(--vb-primary)] underline">
+              economistview123@gmail.com
+            </a>{' '}
+            with the subject &ldquo;Data Deletion Request.&rdquo; We will process your request within 30 days.
+          </p>
+        </section>
+
+        <section className="space-y-2">
+          <h2 className="text-base font-semibold">11. Third-Party Services</h2>
+          <p className="text-[var(--vb-text-secondary)]">
+            ValueBite uses the following third-party services. Each has its own privacy policy:
+          </p>
+          <ul className="list-disc pl-5 space-y-1 text-[var(--vb-text-secondary)]">
+            <li><strong>Google Places API</strong> — restaurant data, photos, hours, reviews</li>
+            <li><strong>OpenStreetMap</strong> — map tiles for the map view</li>
+            <li><strong>Supabase</strong> — backend data storage (community posts, restaurant data)</li>
+            <li><strong>Vercel</strong> — hosting infrastructure</li>
+          </ul>
+        </section>
+
+        <section className="space-y-2">
+          <h2 className="text-base font-semibold">12. Contact Us</h2>
           <p className="text-[var(--vb-text-secondary)]">
             If you have questions about this Privacy Policy, please contact us at{' '}
-            <a href="mailto:privacy@valuebite.app" className="text-[var(--vb-primary)] underline">
-              privacy@valuebite.app
+            <a href="mailto:economistview123@gmail.com" className="text-[var(--vb-primary)] underline">
+              economistview123@gmail.com
             </a>.
           </p>
         </section>
