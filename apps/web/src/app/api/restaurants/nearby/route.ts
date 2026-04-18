@@ -12,43 +12,67 @@ export async function GET(request: NextRequest) {
   const latRange = radiusKm / 111;
   const lngRange = radiusKm / (111 * Math.cos(lat * Math.PI / 180));
 
+  const headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`,
+  };
+
   try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/restaurants?is_active=eq.true&lat=gte.${lat - latRange}&lat=lte.${lat + latRange}&lng=gte.${lng - lngRange}&lng=lte.${lng + lngRange}&select=id,name,slug,lat,lng,cuisine_type,avg_meal_price,price_currency,value_score,taste_score,portion_score,total_reviews,is_chain,phone,website,purpose_scores,place_attributes&order=value_score.desc.nullslast&limit=100`,
-      {
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-        },
-      }
+    // Fetch restaurants in area (over-fetch to allow re-ranking)
+    const restaurantsRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/restaurants?is_active=eq.true&lat=gte.${lat - latRange}&lat=lte.${lat + latRange}&lng=gte.${lng - lngRange}&lng=lte.${lng + lngRange}&select=id,name,slug,lat,lng,cuisine_type,avg_meal_price,price_currency,value_score,taste_score,portion_score,total_reviews,is_chain,phone,website,purpose_scores,place_attributes&order=value_score.desc.nullslast&limit=300`,
+      { headers }
     );
 
-    if (!res.ok) {
+    if (!restaurantsRes.ok) {
       return NextResponse.json({ success: false, error: 'DB query failed' }, { status: 500 });
     }
 
-    const data = await res.json();
+    const data = await restaurantsRes.json();
+    if (!Array.isArray(data) || data.length === 0) {
+      return NextResponse.json({ success: true, data: [], count: 0 });
+    }
 
-    // Transform to frontend format
-    const restaurants = data.map((r: any) => ({
-      id: r.id,
-      name: r.name || { en: 'Unknown' },
-      slug: r.slug,
-      cuisineType: r.cuisine_type || [],
-      lat: r.lat,
-      lng: r.lng,
-      avgMealPrice: r.avg_meal_price ? parseFloat(String(r.avg_meal_price)) : undefined,
-      priceCurrency: r.price_currency || 'USD',
-      valueScore: r.value_score ? parseFloat(String(r.value_score)) : undefined,
-      tasteScore: r.taste_score ? parseFloat(String(r.taste_score)) : undefined,
-      portionScore: r.portion_score ? parseFloat(String(r.portion_score)) : undefined,
-      totalReviews: r.total_reviews || 0,
-      isChain: r.is_chain || false,
-      purposeScores: r.purpose_scores || {},
-      placeAttributes: r.place_attributes || {},
-      distance: Math.round(haversine(lat, lng, r.lat, r.lng)),
-      freshnessIndicator: { label: 'Recently Verified', color: 'green', icon: 'check' },
-    }));
+    // Fetch which of these restaurants have at least one photo (1 query)
+    const ids = data.map((r: any) => r.id);
+    const idClause = `in.(${ids.join(',')})`;
+    const photosRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/menu_photos?restaurant_id=${idClause}&select=restaurant_id`,
+      { headers }
+    );
+    const photosData: { restaurant_id: string }[] = photosRes.ok ? await photosRes.json() : [];
+    const restaurantsWithPhotos = new Set(photosData.map((p) => p.restaurant_id));
+
+    // Transform + sort: photos-first, then by value_score
+    const restaurants = data
+      .map((r: any) => ({
+        id: r.id,
+        name: r.name || { en: 'Unknown' },
+        slug: r.slug,
+        cuisineType: r.cuisine_type || [],
+        lat: r.lat,
+        lng: r.lng,
+        avgMealPrice: r.avg_meal_price ? parseFloat(String(r.avg_meal_price)) : undefined,
+        priceCurrency: r.price_currency || 'USD',
+        valueScore: r.value_score ? parseFloat(String(r.value_score)) : undefined,
+        tasteScore: r.taste_score ? parseFloat(String(r.taste_score)) : undefined,
+        portionScore: r.portion_score ? parseFloat(String(r.portion_score)) : undefined,
+        totalReviews: r.total_reviews || 0,
+        isChain: r.is_chain || false,
+        purposeScores: r.purpose_scores || {},
+        placeAttributes: r.place_attributes || {},
+        distance: Math.round(haversine(lat, lng, r.lat, r.lng)),
+        freshnessIndicator: { label: 'Recently Verified', color: 'green', icon: 'check' },
+        _hasPhoto: restaurantsWithPhotos.has(r.id),
+      }))
+      .sort((a, b) => {
+        // Primary sort: has photo (true first)
+        if (a._hasPhoto !== b._hasPhoto) return a._hasPhoto ? -1 : 1;
+        // Secondary sort: value score desc
+        return (b.valueScore || 0) - (a.valueScore || 0);
+      })
+      .slice(0, 100)
+      .map(({ _hasPhoto, ...r }) => r); // strip internal flag
 
     return NextResponse.json({ success: true, data: restaurants, count: restaurants.length });
   } catch (err: any) {
