@@ -13,6 +13,7 @@ import { fetchRestaurantDetail } from '@/lib/data';
 import { PriceSuggestionModal } from '@/components/PriceSuggestionModal';
 import { useAppStore } from '@/lib/store';
 import { formatDistance } from '@valuebite/utils';
+import { DeliveryLinks } from '@/components/DeliveryLinks';
 import {
   ArrowLeft, MapPin, MessageSquare, PenLine, Clock, Globe, Phone,
   TrendingDown, Star, ChevronDown, ChevronUp,
@@ -469,6 +470,14 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
               </span>
             </a>
           )}
+
+          {/* Order Online — affiliate links to delivery services (Tier 3 monetization) */}
+          <DeliveryLinks restaurant={{
+            name: restaurant.name || {},
+            lat: restaurant.lat,
+            lng: restaurant.lng,
+            countryCode: priceCountry,
+          }} />
 
           {/* Phone */}
           {restaurant.phone && (

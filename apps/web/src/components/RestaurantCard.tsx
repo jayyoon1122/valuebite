@@ -35,7 +35,7 @@ function getCuisineEmoji(cuisineTypes?: string[]): string {
 }
 
 interface Props {
-  restaurant: RestaurantListItem;
+  restaurant: RestaurantListItem & { isSponsored?: boolean; promotedId?: string };
   countryCode?: string;
 }
 
@@ -86,10 +86,22 @@ export function RestaurantCard({ restaurant, countryCode = 'JP' }: Props) {
     ? formatPrice(restaurant.avgMealPrice, priceCountry)
     : '';
 
+  // Track sponsored click (fire-and-forget, doesn't block navigation)
+  const handleClick = () => {
+    if (restaurant.isSponsored && restaurant.promotedId) {
+      fetch('/api/sponsored', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ promotedId: restaurant.promotedId }),
+      }).catch(() => {});
+    }
+  };
+
   return (
     <Link
       href={`/restaurant/${restaurant.id}`}
-      className="block bg-[var(--vb-bg)] border border-[var(--vb-border)] rounded-xl p-4 hover:shadow-md transition-shadow"
+      onClick={handleClick}
+      className="block bg-[var(--vb-bg)] border border-[var(--vb-border)] rounded-xl p-4 hover:shadow-md transition-shadow relative"
     >
       <div className="flex justify-between items-start mb-2">
         <div className="w-10 h-10 rounded-lg bg-[var(--vb-bg-secondary)] flex items-center justify-center text-xl mr-3 shrink-0">
@@ -101,6 +113,9 @@ export function RestaurantCard({ restaurant, countryCode = 'JP' }: Props) {
             {restaurant.cuisineType?.filter(c => !['meal_takeaway','meal_delivery','store','lodging','bar','night_club','cafe','bakery','supermarket'].includes(c)).slice(0, 2).map((c) => (
               <span key={c} className="capitalize">{c.replace(/_/g, ' ')}</span>
             ))}
+            {restaurant.isSponsored && (
+              <span className="text-[10px] uppercase tracking-wide text-[var(--vb-text-secondary)] opacity-60">· Sponsored</span>
+            )}
           </div>
         </div>
         <ValueBadge score={restaurant.valueScore} />

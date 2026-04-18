@@ -52,6 +52,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossOrigin=""
         />
+        {/* Google AdSense — only loads when client ID is configured (Tier 2 monetization).
+            Until Jay applies + gets approved at https://www.google.com/adsense, this renders nothing. */}
+        {process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID && (
+          <script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID}`}
+            crossOrigin="anonymous"
+          />
+        )}
       </head>
       <body className="min-h-screen bg-[var(--vb-bg)] text-[var(--vb-text)]">
         <HtmlLangUpdater />

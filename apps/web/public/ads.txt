@@ -1,0 +1,2 @@
+# Google AdSense ads.txt (replace pub-XXXXXXXXXXXX with Jay's publisher ID after AdSense approval)
+# google.com, pub-XXXXXXXXXXXX, DIRECT, f08c47fec0942fa0

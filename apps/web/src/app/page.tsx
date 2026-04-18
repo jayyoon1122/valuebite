@@ -6,23 +6,23 @@ import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { PurposeChips } from '@/components/PurposeChips';
 import { RestaurantCard } from '@/components/RestaurantCard';
-import { NativeAdCard } from '@/components/NativeAdCard';
 import { MapView } from '@/components/MapView';
 import { PriceAlertBanner } from '@/components/PriceAlertBanner';
 import { useAppStore } from '@/lib/store';
-import { FEED_ADS, getNextFeedAd } from '@/lib/ad-placements';
 import { fetchNearbyRestaurants } from '@/lib/data';
 import { findNearestCity } from '@/lib/regions';
 import { MapPin, Loader2, Crosshair } from 'lucide-react';
 
-const AD_FREQUENCY = 6;
-const FIRST_AD_POSITION = 4;
+// Sponsored placement: every 6 organic results, starting at position 4
+const SPONSORED_FREQUENCY = 6;
+const FIRST_SPONSORED_POSITION = 4;
 
 export default function HomePage() {
   const router = useRouter();
   const { isMapView, userLat, userLng, selectedPurpose, countryCode, showChains, cityId, cityName, setUserLocation, setCountryCode, setCityId } = useAppStore();
   const [sheetExpanded, setSheetExpanded] = useState(false);
   const [restaurants, setRestaurants] = useState<any[]>([]);
+  const [sponsored, setSponsored] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [geoAsked, setGeoAsked] = useState(false);
   const [locating, setLocating] = useState(false);
@@ -79,17 +79,46 @@ export default function HomePage() {
       .catch(() => setLoading(false));
   }, [userLat, userLng]);
 
+  // Fetch sponsored listings (in-house promoted) — up to 3 per page view
+  useEffect(() => {
+    if (!cityId) return;
+    let cancelled = false;
+    (async () => {
+      const seen: string[] = [];
+      const items: any[] = [];
+      for (let i = 0; i < 3; i++) {
+        const params = new URLSearchParams({ city: cityId, exclude: seen.join(',') });
+        if (selectedPurpose) params.set('purpose', selectedPurpose);
+        try {
+          const r = await fetch('/api/sponsored?' + params.toString());
+          const d = await r.json();
+          if (d.success && d.data) {
+            items.push(d.data);
+            seen.push(d.data.id);
+          } else {
+            break;
+          }
+        } catch { break; }
+      }
+      if (!cancelled) setSponsored(items);
+    })();
+    return () => { cancelled = true; };
+  }, [cityId, selectedPurpose]);
+
   // Apply filters
   let filtered = [...restaurants];
   if (!showChains) filtered = filtered.filter(r => !r.isChain);
 
-  // Build feed with ads
-  const feedItems: Array<{ type: 'restaurant' | 'ad'; data: any }> = [];
-  let adIdx = 0;
+  // Weave sponsored cards into the organic feed at positions 4, 10, 16
+  // They look 100% identical to RestaurantCard (only difference: small "Sponsored" tag in cuisine row)
+  const feedItems: any[] = [];
+  let sponsoredIdx = 0;
   filtered.forEach((r, i) => {
-    feedItems.push({ type: 'restaurant', data: r });
-    if ((i + 1) >= FIRST_AD_POSITION && (i + 1 - FIRST_AD_POSITION) % AD_FREQUENCY === 0 && adIdx < FEED_ADS.length) {
-      feedItems.push({ type: 'ad', data: getNextFeedAd(adIdx++) });
+    feedItems.push(r);
+    if ((i + 1) >= FIRST_SPONSORED_POSITION
+        && (i + 1 - FIRST_SPONSORED_POSITION) % SPONSORED_FREQUENCY === 0
+        && sponsoredIdx < sponsored.length) {
+      feedItems.push(sponsored[sponsoredIdx++]);
     }
   });
 
@@ -144,13 +173,9 @@ export default function HomePage() {
             <div className="overflow-y-auto" style={{ height: sheetExpanded ? 'calc(75vh - 50px)' : 'calc(30vh - 50px)' }}>
               <div className="px-4 pb-20 space-y-3">
                 <h2 className="text-sm font-semibold text-[var(--vb-text-secondary)]">{filtered.length} restaurants nearby</h2>
-                {feedItems.map((item, i) =>
-                  item.type === 'restaurant' ? (
-                    <RestaurantCard key={`r-${item.data.id}`} restaurant={item.data} />
-                  ) : (
-                    <NativeAdCard key={`ad-${item.data.id}`} ad={item.data} />
-                  )
-                )}
+                {feedItems.map((item, i) => (
+                  <RestaurantCard key={`${item.isSponsored ? 's' : 'r'}-${item.id}-${i}`} restaurant={item} />
+                ))}
               </div>
             </div>
           </div>
@@ -158,13 +183,9 @@ export default function HomePage() {
       ) : (
         <div className="px-4 py-4 space-y-3 max-w-2xl mx-auto">
           <h2 className="text-sm font-semibold text-[var(--vb-text-secondary)]">{filtered.length} restaurants nearby</h2>
-          {feedItems.map((item, i) =>
-            item.type === 'restaurant' ? (
-              <RestaurantCard key={`r-${item.data.id}`} restaurant={item.data} />
-            ) : (
-              <NativeAdCard key={`ad-${item.data.id}`} ad={item.data} />
-            )
-          )}
+          {feedItems.map((item, i) => (
+            <RestaurantCard key={`${item.isSponsored ? 's' : 'r'}-${item.id}-${i}`} restaurant={item} />
+          ))}
         </div>
       )}
 
