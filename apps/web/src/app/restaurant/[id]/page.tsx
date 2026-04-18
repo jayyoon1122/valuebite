@@ -14,6 +14,7 @@ import { PriceSuggestionModal } from '@/components/PriceSuggestionModal';
 import { useAppStore } from '@/lib/store';
 import { formatDistance } from '@valuebite/utils';
 import { DeliveryLinks } from '@/components/DeliveryLinks';
+import { GoogleAdSlot } from '@/components/GoogleAdSlot';
 import {
   ArrowLeft, MapPin, MessageSquare, PenLine, Clock, Globe, Phone,
   TrendingDown, Star, ChevronDown, ChevronUp,
@@ -559,6 +560,12 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
             </span>
           </div>
         )}
+
+        {/* AdSense slot — natural placement at very bottom, after all content.
+            Renders nothing until AdSense is approved + env var set. */}
+        <div className="pt-4">
+          <GoogleAdSlot slotId="detail-bottom" format="auto" />
+        </div>
       </div>
 
       <BottomNav />

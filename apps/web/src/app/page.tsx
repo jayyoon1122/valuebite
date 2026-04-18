@@ -8,21 +8,24 @@ import { PurposeChips } from '@/components/PurposeChips';
 import { RestaurantCard } from '@/components/RestaurantCard';
 import { MapView } from '@/components/MapView';
 import { PriceAlertBanner } from '@/components/PriceAlertBanner';
+import { GoogleAdSlot } from '@/components/GoogleAdSlot';
 import { useAppStore } from '@/lib/store';
 import { fetchNearbyRestaurants } from '@/lib/data';
 import { findNearestCity } from '@/lib/regions';
 import { MapPin, Loader2, Crosshair } from 'lucide-react';
 
-// Sponsored placement: every 6 organic results, starting at position 4
-const SPONSORED_FREQUENCY = 6;
-const FIRST_SPONSORED_POSITION = 4;
+// Ad placement: every 6 organic results, starting at position 4
+const AD_FREQUENCY = 6;
+const FIRST_AD_POSITION = 4;
+// AdSense ad slot IDs — replace with real slots after AdSense approval
+// Until then, GoogleAdSlot renders nothing (no client ID env set)
+const AD_SLOT_IDS = ['feed-ad-1', 'feed-ad-2', 'feed-ad-3'];
 
 export default function HomePage() {
   const router = useRouter();
   const { isMapView, userLat, userLng, selectedPurpose, countryCode, showChains, cityId, cityName, setUserLocation, setCountryCode, setCityId } = useAppStore();
   const [sheetExpanded, setSheetExpanded] = useState(false);
   const [restaurants, setRestaurants] = useState<any[]>([]);
-  const [sponsored, setSponsored] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [geoAsked, setGeoAsked] = useState(false);
   const [locating, setLocating] = useState(false);
@@ -79,46 +82,22 @@ export default function HomePage() {
       .catch(() => setLoading(false));
   }, [userLat, userLng]);
 
-  // Fetch sponsored listings (in-house promoted) — up to 3 per page view
-  useEffect(() => {
-    if (!cityId) return;
-    let cancelled = false;
-    (async () => {
-      const seen: string[] = [];
-      const items: any[] = [];
-      for (let i = 0; i < 3; i++) {
-        const params = new URLSearchParams({ city: cityId, exclude: seen.join(',') });
-        if (selectedPurpose) params.set('purpose', selectedPurpose);
-        try {
-          const r = await fetch('/api/sponsored?' + params.toString());
-          const d = await r.json();
-          if (d.success && d.data) {
-            items.push(d.data);
-            seen.push(d.data.id);
-          } else {
-            break;
-          }
-        } catch { break; }
-      }
-      if (!cancelled) setSponsored(items);
-    })();
-    return () => { cancelled = true; };
-  }, [cityId, selectedPurpose]);
-
   // Apply filters
   let filtered = [...restaurants];
   if (!showChains) filtered = filtered.filter(r => !r.isChain);
 
-  // Weave sponsored cards into the organic feed at positions 4, 10, 16
-  // They look 100% identical to RestaurantCard (only difference: small "Sponsored" tag in cuisine row)
-  const feedItems: any[] = [];
-  let sponsoredIdx = 0;
+  // Weave AdSense ad slots into the organic feed at positions 4, 10, 16.
+  // GoogleAdSlot renders nothing until NEXT_PUBLIC_ADSENSE_CLIENT_ID is set,
+  // so before AdSense approval the feed is 100% clean (no empty boxes).
+  type FeedItem = { type: 'restaurant'; data: any } | { type: 'ad'; slotId: string };
+  const feedItems: FeedItem[] = [];
+  let adIdx = 0;
   filtered.forEach((r, i) => {
-    feedItems.push(r);
-    if ((i + 1) >= FIRST_SPONSORED_POSITION
-        && (i + 1 - FIRST_SPONSORED_POSITION) % SPONSORED_FREQUENCY === 0
-        && sponsoredIdx < sponsored.length) {
-      feedItems.push(sponsored[sponsoredIdx++]);
+    feedItems.push({ type: 'restaurant', data: r });
+    if ((i + 1) >= FIRST_AD_POSITION
+        && (i + 1 - FIRST_AD_POSITION) % AD_FREQUENCY === 0
+        && adIdx < AD_SLOT_IDS.length) {
+      feedItems.push({ type: 'ad', slotId: AD_SLOT_IDS[adIdx++] });
     }
   });
 
@@ -174,7 +153,9 @@ export default function HomePage() {
               <div className="px-4 pb-20 space-y-3">
                 <h2 className="text-sm font-semibold text-[var(--vb-text-secondary)]">{filtered.length} restaurants nearby</h2>
                 {feedItems.map((item, i) => (
-                  <RestaurantCard key={`${item.isSponsored ? 's' : 'r'}-${item.id}-${i}`} restaurant={item} />
+                  item.type === 'restaurant'
+                    ? <RestaurantCard key={`r-${item.data.id}-${i}`} restaurant={item.data} />
+                    : <GoogleAdSlot key={`ad-${item.slotId}-${i}`} slotId={item.slotId} format="fluid" />
                 ))}
               </div>
             </div>
@@ -184,7 +165,9 @@ export default function HomePage() {
         <div className="px-4 py-4 space-y-3 max-w-2xl mx-auto">
           <h2 className="text-sm font-semibold text-[var(--vb-text-secondary)]">{filtered.length} restaurants nearby</h2>
           {feedItems.map((item, i) => (
-            <RestaurantCard key={`${item.isSponsored ? 's' : 'r'}-${item.id}-${i}`} restaurant={item} />
+            item.type === 'restaurant'
+              ? <RestaurantCard key={`r-${item.data.id}-${i}`} restaurant={item.data} />
+              : <GoogleAdSlot key={`ad-${item.slotId}-${i}`} slotId={item.slotId} format="fluid" />
           ))}
         </div>
       )}

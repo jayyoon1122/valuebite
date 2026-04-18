@@ -34,6 +34,8 @@ function getCuisineEmoji(cuisineTypes?: string[]): string {
   return CUISINE_EMOJI.default;
 }
 
+// isSponsored/promotedId kept for future in-house promoted listings
+// (currently dormant — see MONETIZATION_GUIDE.md for activation path)
 interface Props {
   restaurant: RestaurantListItem & { isSponsored?: boolean; promotedId?: string };
   countryCode?: string;

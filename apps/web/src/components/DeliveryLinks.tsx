@@ -22,6 +22,16 @@ interface Props {
  * Earns ~5-10% commission per order (varies by platform).
  */
 export function DeliveryLinks({ restaurant }: Props) {
+  // Tier 3 monetization: only render when at least one affiliate ID is configured.
+  // Until Jay applies for affiliate programs, this stays hidden — no user value
+  // showing delivery buttons that don't earn us anything.
+  const hasAnyAffiliate = !!(
+    process.env.NEXT_PUBLIC_AFFILIATE_DOORDASH_ID ||
+    process.env.NEXT_PUBLIC_AFFILIATE_UBEREATS_ID ||
+    process.env.NEXT_PUBLIC_AFFILIATE_GRUBHUB_ID
+  );
+  if (!hasAnyAffiliate) return null;
+
   const links = getDeliveryLinks(restaurant);
   if (links.length === 0) return null;
 
