@@ -33,15 +33,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, data: [], count: 0 });
     }
 
-    // Fetch which of these restaurants have at least one photo (1 query)
-    const ids = data.map((r: any) => r.id);
-    const idClause = `in.(${ids.join(',')})`;
-    const photosRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/menu_photos?restaurant_id=${idClause}&select=restaurant_id`,
-      { headers }
+    // Fetch which of these restaurants have photos. Chunk IDs to keep URL under PostgREST's
+    // ~8KB limit. 50 UUIDs per batch ≈ 2KB URL.
+    const ids = data.map((r: any) => r.id as string);
+    const restaurantsWithPhotos = new Set<string>();
+    const CHUNK = 50;
+    const photoBatches = await Promise.all(
+      Array.from({ length: Math.ceil(ids.length / CHUNK) }, (_, i) => ids.slice(i * CHUNK, (i + 1) * CHUNK))
+        .map((batch) =>
+          fetch(`${SUPABASE_URL}/rest/v1/menu_photos?restaurant_id=in.(${batch.join(',')})&select=restaurant_id&limit=2000`, { headers })
+            .then((r) => (r.ok ? r.json() : []))
+            .catch(() => [])
+        )
     );
-    const photosData: { restaurant_id: string }[] = photosRes.ok ? await photosRes.json() : [];
-    const restaurantsWithPhotos = new Set(photosData.map((p) => p.restaurant_id));
+    for (const batch of photoBatches) {
+      for (const p of batch as { restaurant_id: string }[]) restaurantsWithPhotos.add(p.restaurant_id);
+    }
 
     // Transform + sort: photos-first, then by value_score
     const restaurants = data
