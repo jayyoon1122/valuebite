@@ -27,3 +27,6 @@ parsed_restaurants.json
 *.aab
 *.apk
 *.keystore
+
+WORKLOG.md
+apps/web/public/icon-candidates/
