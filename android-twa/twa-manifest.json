@@ -1,0 +1,76 @@
+{
+  "packageId": "app.valuebite.twa",
+  "host": "truevaluebite.com",
+  "name": "ValueBite",
+  "launcherName": "ValueBite",
+  "display": "standalone",
+  "themeColor": "#22C55E",
+  "themeColorDark": "#0A0A0A",
+  "navigationColor": "#0A0A0A",
+  "navigationColorDark": "#0A0A0A",
+  "navigationDividerColor": "#0A0A0A",
+  "navigationDividerColorDark": "#0A0A0A",
+  "backgroundColor": "#0A0A0A",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://truevaluebite.com/icon-512.png",
+  "maskableIconUrl": "https://truevaluebite.com/icon-maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "/Users/jayyoon/Documents/MyClaudeProject01/ValueBite_01/android-twa/android.keystore",
+    "alias": "valuebite"
+  },
+  "appVersionName": "1.0.1",
+  "appVersionCode": 2,
+  "shortcuts": [
+    {
+      "name": "Search restaurants",
+      "shortName": "Search",
+      "url": "/search",
+      "chosenIconUrl": "https://truevaluebite.com/icon-192.png"
+    },
+    {
+      "name": "Browse by purpose",
+      "shortName": "Browse",
+      "url": "/purpose",
+      "chosenIconUrl": "https://truevaluebite.com/icon-192.png"
+    },
+    {
+      "name": "Community",
+      "shortName": "Community",
+      "url": "/community",
+      "chosenIconUrl": "https://truevaluebite.com/icon-192.png"
+    },
+    {
+      "name": "My budget",
+      "shortName": "Budget",
+      "url": "/profile",
+      "chosenIconUrl": "https://truevaluebite.com/icon-192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://truevaluebite.com/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": true
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://truevaluebite.com/",
+  "minSdkVersion": 23,
+  "orientation": "portrait",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "displayOverride": [],
+  "appVersion": "1.0.1"
+}
