@@ -122,6 +122,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         address: r.address,
         menuItemCount: formattedMenuItems.length,
         menuItems: formattedMenuItems,
+        lastVerified: r.updated_at || r.created_at || null,
         freshnessIndicator: { label: 'Recently Verified', color: 'green', icon: 'check' },
         photos: formattedPhotos,
         googleReviews: {

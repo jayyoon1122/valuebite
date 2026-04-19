@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
   try {
     // ONE query (was 7+ before). Try to include has_photos column for fast
     // sort; fall back to old SELECT if column doesn't exist yet (pre-migration).
-    const baseSelect = 'id,name,slug,lat,lng,cuisine_type,avg_meal_price,price_currency,value_score,taste_score,portion_score,total_reviews,is_chain,phone,website,purpose_scores';
+    const baseSelect = 'id,name,slug,lat,lng,cuisine_type,avg_meal_price,price_currency,value_score,taste_score,portion_score,total_reviews,is_chain,phone,website,purpose_scores,operating_hours,is_24h,updated_at';
     const tryWithHasPhotos = await fetch(
       `${SUPABASE_URL}/rest/v1/restaurants?is_active=eq.true&lat=gte.${lat - latRange}&lat=lte.${lat + latRange}&lng=gte.${lng - lngRange}&lng=lte.${lng + lngRange}&select=${baseSelect},has_photos&${sortClause}&limit=${overFetch}`,
       { headers, next: { revalidate: 60 } }
@@ -83,6 +83,9 @@ export async function GET(request: NextRequest) {
         isChain: r.is_chain || false,
         purposeScores: r.purpose_scores || {},
         hasPhoto: !!r.has_photos,
+        operatingHours: r.operating_hours,
+        is24h: r.is_24h,
+        lastVerified: r.updated_at || null,
         distance: Math.round(haversine(lat, lng, r.lat, r.lng)),
         freshnessIndicator: { label: 'Recently Verified', color: 'green', icon: 'check' },
       }))
@@ -96,11 +99,46 @@ export async function GET(request: NextRequest) {
         }
         if (a.hasPhoto !== b.hasPhoto) return a.hasPhoto ? -1 : 1;
         return (b.valueScore || 0) - (a.valueScore || 0);
-      })
-      .slice(0, 100);
+      });
+
+    // ─────────── DIVERSIFICATION (P0-3) ───────────
+    // For premium/curated purposes (date_night, special_occasion), the raw
+    // sort produces "all sushi" because high-end sushi dominates the score.
+    // Apply two filters:
+    //   1. Value floor — exclude restaurants with value_score < 2.5
+    //   2. Cuisine cap — limit each NORMALIZED cuisine bucket so the list
+    //      shows variety. Bucket key collapses "Sushi Omakase",
+    //      "All-You-Can-Eat Sushi", "Budget Omakase" all into "sushi" so cap
+    //      actually limits sushi places.
+    function bucketKey(types: string[] | undefined): string {
+      if (!types || !types.length) return 'unknown';
+      const first = String(types[0]).toLowerCase();
+      // Normalize related sub-cuisines into one bucket
+      if (/(sushi|omakase|kaiseki|sashimi)/.test(first)) return 'sushi_japanese_premium';
+      if (/(steakhouse|gyukatsu|tonkatsu|teppan|wagyu)/.test(first)) return 'meat';
+      if (/(ramen|noodle|udon|soba|pho)/.test(first)) return 'noodle';
+      if (/(pizza|italian|pasta)/.test(first)) return 'italian';
+      if (/(burger|fast_food)/.test(first)) return 'burger';
+      if (/(thai|vietnamese|korean|chinese|indian)/.test(first)) return first.split(/\s/)[0];
+      return first.split(/\s/)[0];
+    }
+    let diversified = restaurants;
+    const PREMIUM_PURPOSES = new Set(['date_night', 'special_occasion']);
+    if (purpose && PREMIUM_PURPOSES.has(purpose)) {
+      const MAX_PER_CUISINE = 3;
+      const VALUE_FLOOR = 2.5;
+      const seenCuisine: Record<string, number> = {};
+      diversified = restaurants
+        .filter((r: any) => (r.valueScore || 0) >= VALUE_FLOOR)
+        .filter((r: any) => {
+          const key = bucketKey(r.cuisineType);
+          seenCuisine[key] = (seenCuisine[key] || 0) + 1;
+          return seenCuisine[key] <= MAX_PER_CUISINE;
+        });
+    }
 
     return NextResponse.json(
-      { success: true, data: restaurants, count: restaurants.length },
+      { success: true, data: diversified.slice(0, 100), count: Math.min(diversified.length, 100) },
       { headers: CACHE_HEADERS }
     );
   } catch (err: any) {

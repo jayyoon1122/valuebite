@@ -9,24 +9,26 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@types/leaflet.markercluster": "^1.5.6",
+    "@valuebite/i18n": "*",
     "@valuebite/types": "*",
     "@valuebite/utils": "*",
-    "@valuebite/i18n": "*",
+    "leaflet": "^1.9.0",
+    "leaflet.markercluster": "^1.5.3",
+    "lucide-react": "^0.475.0",
     "next": "^15.3.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "zustand": "^5.0.0",
-    "leaflet": "^1.9.0",
     "react-leaflet": "^5.0.0",
-    "lucide-react": "^0.475.0"
+    "zustand": "^5.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.7.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/leaflet": "^1.9.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "@types/leaflet": "^1.9.0",
+    "postcss": "^8.5.0",
     "tailwindcss": "^4.0.0",
-    "@tailwindcss/postcss": "^4.0.0",
-    "postcss": "^8.5.0"
+    "typescript": "^5.7.0"
   }
 }

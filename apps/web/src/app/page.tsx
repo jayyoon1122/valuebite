@@ -9,6 +9,7 @@ import { RestaurantCard } from '@/components/RestaurantCard';
 import { MapView } from '@/components/MapView';
 import { PriceAlertBanner } from '@/components/PriceAlertBanner';
 import { GoogleAdSlot } from '@/components/GoogleAdSlot';
+import { Onboarding } from '@/components/Onboarding';
 import { useAppStore } from '@/lib/store';
 import { fetchNearbyRestaurants } from '@/lib/data';
 import { findNearestCity } from '@/lib/regions';
@@ -203,6 +204,7 @@ export default function HomePage() {
       )}
 
       <BottomNav />
+      <Onboarding />
     </div>
   );
 }

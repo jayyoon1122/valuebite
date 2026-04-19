@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, X } from 'lucide-react';
 
-export function SearchBar({ onQueryChange }: { onQueryChange?: (q: string) => void } = {}) {
-  const [query, setQuery] = useState('');
+export function SearchBar({ onQueryChange, initialValue }: { onQueryChange?: (q: string) => void; initialValue?: string } = {}) {
+  const [query, setQuery] = useState(initialValue || '');
   const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {

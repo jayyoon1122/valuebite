@@ -55,18 +55,22 @@ export function PhotoGallery({ restaurantName, realPhotos, cuisineTypes }: Props
   const [currentIndex, setCurrentIndex] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
   const [brokenUrls, setBrokenUrls] = useState<Set<string>>(new Set());
+  const [loadedUrls, setLoadedUrls] = useState<Set<string>>(new Set());
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
   const handleImageError = useCallback((url: string) => {
     setBrokenUrls(prev => new Set(prev).add(url));
   }, []);
+  const handleImageLoad = useCallback((url: string) => {
+    setLoadedUrls(prev => new Set(prev).add(url));
+  }, []);
 
   // Filter out broken photos
   const photos = (realPhotos || []).filter(p => !brokenUrls.has(p.url));
+  const theme = getCuisineTheme(cuisineTypes);
 
   if (photos.length === 0) {
-    const theme = getCuisineTheme(cuisineTypes);
     return (
       <div className={`h-64 bg-gradient-to-br ${theme.gradient} flex flex-col items-center justify-center gap-3 relative overflow-hidden`}>
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 25% 25%, white 1px, transparent 1px), radial-gradient(circle at 75% 75%, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
@@ -78,6 +82,7 @@ export function PhotoGallery({ restaurantName, realPhotos, cuisineTypes }: Props
 
   const safeIndex = Math.min(currentIndex, photos.length - 1);
   const current = photos[safeIndex];
+  const isLoaded = loadedUrls.has(current.url);
 
   const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
   const handleTouchMove = (e: React.TouchEvent) => { touchEndX.current = e.touches[0].clientX; };
@@ -91,18 +96,30 @@ export function PhotoGallery({ restaurantName, realPhotos, cuisineTypes }: Props
 
   return (
     <div
-      className="relative h-64 bg-black overflow-hidden"
+      className={`relative h-64 overflow-hidden ${isLoaded ? 'bg-black' : `bg-gradient-to-br ${theme.gradient}`}`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
+      {/* Cuisine-themed skeleton shown while photo loads (instead of black void) */}
+      {!isLoaded && (
+        <>
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 25% 25%, white 1px, transparent 1px), radial-gradient(circle at 75% 75%, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none">
+            <span className="text-6xl drop-shadow-lg animate-pulse" role="img" aria-label="Loading">{theme.emoji}</span>
+            <p className="text-xs text-white/80 font-medium drop-shadow uppercase tracking-wide">Loading photo…</p>
+          </div>
+        </>
+      )}
       <img
         src={current.url}
         alt={`${restaurantName} photo ${safeIndex + 1}`}
-        className="w-full h-full object-cover cursor-pointer"
+        className={`w-full h-full object-cover cursor-pointer transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
         onClick={() => setFullscreen(true)}
         onError={() => handleImageError(current.url)}
-        loading="lazy"
+        onLoad={() => handleImageLoad(current.url)}
+        loading="eager"
+        decoding="async"
       />
 
       {/* Gradient overlay for readability */}

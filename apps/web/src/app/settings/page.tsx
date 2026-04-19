@@ -18,17 +18,9 @@ export default function SettingsPage() {
   const [showRegionSelector, setShowRegionSelector] = useState(false);
   const [regionTab, setRegionTab] = useState<'region' | 'language'>('region');
   const [expandedCountry, setExpandedCountry] = useState<string | null>(null);
-  const [pushNotifications, setPushNotifications] = useState(true);
-  const [priceAlerts, setPriceAlerts] = useState(true);
-  const [weeklyReport, setWeeklyReport] = useState(false);
   const [showNativeAds, setShowNativeAds] = useState(true);
 
   useEffect(() => {
-    const pn = localStorage.getItem('vb-push-notifications');
-    if (pn !== null) setPushNotifications(pn === 'true');
-    const pa = localStorage.getItem('vb-price-alerts');
-    if (pa !== null) setPriceAlerts(pa === 'true');
-    setWeeklyReport(localStorage.getItem('vb-weekly-report') === 'true');
     const na = localStorage.getItem('vb-native-ads');
     if (na !== null) setShowNativeAds(na === 'true');
   }, []);
@@ -104,22 +96,24 @@ export default function SettingsPage() {
         />
         <div className="border-b border-[var(--vb-border)] mx-4" />
 
-        {/* Notifications */}
+        {/* Notifications — currently disabled. Toggles re-enable once Web Push +
+            Vercel Cron pipeline is live. Hiding the fake UI (rather than showing
+            a never-firing toggle) prevents trust loss after Play Store launch. */}
         <div className="px-4 pt-4 pb-1">
           <h2 className="text-xs font-semibold text-[var(--vb-text-secondary)] uppercase tracking-wider">Notifications</h2>
         </div>
-        <SettingRow
-          icon={Bell} label="Push Notifications"
-          trailing={<Toggle on={pushNotifications} onToggle={() => { const v = !pushNotifications; setPushNotifications(v); localStorage.setItem('vb-push-notifications', String(v)); }} />}
-        />
-        <SettingRow
-          icon={Bell} label="Price Change Alerts"
-          trailing={<Toggle on={priceAlerts} onToggle={() => { const v = !priceAlerts; setPriceAlerts(v); localStorage.setItem('vb-price-alerts', String(v)); }} />}
-        />
-        <SettingRow
-          icon={MessageSquare} label="Weekly Value Report"
-          trailing={<Toggle on={weeklyReport} onToggle={() => { const v = !weeklyReport; setWeeklyReport(v); localStorage.setItem('vb-weekly-report', String(v)); }} />}
-        />
+        <div className="px-4 py-3 flex items-start gap-3">
+          <Bell size={20} className="text-[var(--vb-text-secondary)] shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm">Push Notifications</p>
+            <p className="text-xs text-[var(--vb-text-secondary)] mt-0.5">
+              Coming soon — we&apos;re building weekly value reports and price-drop alerts.
+            </p>
+          </div>
+          <span className="shrink-0 text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full bg-[var(--vb-bg-secondary)] text-[var(--vb-text-secondary)]">
+            Soon
+          </span>
+        </div>
         <div className="border-b border-[var(--vb-border)] mx-4" />
 
         {/* Privacy */}
@@ -140,7 +134,23 @@ export default function SettingsPage() {
         </div>
         <SettingRow icon={HelpCircle} label="Help Center" onClick={() => router.push('/help')} />
         <SettingRow icon={MessageSquare} label="Contact Us" onClick={() => router.push('/help')} />
-        <SettingRow icon={Star} label="Rate ValueBite" onClick={() => alert('Thank you for your interest! Rating will be available once ValueBite is live on the App Store.')} />
+        <SettingRow icon={Star} label="Rate ValueBite" onClick={() => {
+          // Try Android Play Store deep link first, fall back to web URL.
+          // app.valuebite.twa is the package id used by Bubblewrap (TWA).
+          const PKG = 'app.valuebite.twa';
+          const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+          const isAndroid = /android/i.test(ua);
+          if (isAndroid) {
+            // market:// opens Play Store app directly when present.
+            window.location.href = `market://details?id=${PKG}`;
+            // Fallback: if market:// fails (no Play Store), open the https URL after a short delay.
+            setTimeout(() => {
+              window.open(`https://play.google.com/store/apps/details?id=${PKG}`, '_blank');
+            }, 800);
+          } else {
+            window.open(`https://play.google.com/store/apps/details?id=${PKG}`, '_blank');
+          }
+        }} />
         <SettingRow icon={Smartphone} label="App Version" value="1.0.0" />
         <div className="border-b border-[var(--vb-border)] mx-4" />
 

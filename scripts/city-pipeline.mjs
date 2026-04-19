@@ -23,6 +23,37 @@ envFile.split('\n').forEach(line => {
 });
 
 const GOOGLE_KEY = env.GOOGLE_PLACES_API_KEY;
+
+// Ingestion guard (P0-4): is this Google Place actually a restaurant?
+// Reject obvious non-restaurants (hostels, malls, bookstores, etc.) at intake
+// so they never enter the DB. Returns true if place looks like a real eatery.
+const _NON_RESTAURANT_TYPES = new Set([
+  'lodging', 'hotel', 'hostel', 'pharmacy', 'drugstore', 'spa', 'beauty_salon',
+  'parking', 'gas_station', 'atm', 'real_estate_agency', 'bank',
+  'school', 'university', 'hospital', 'clinic', 'library',
+  'shopping_mall', 'department_store', 'electronics_store', 'clothing_store',
+  'jewelry_store', 'shoe_store', 'book_store', 'home_goods_store',
+  'furniture_store', 'museum', 'tourist_attraction', 'place_of_worship',
+  'movie_theater', 'gym', 'stadium',
+]);
+const _RESTAURANT_TYPES = new Set([
+  'restaurant', 'cafe', 'bakery', 'bar', 'meal_takeaway', 'meal_delivery',
+  'food', 'food_court',
+]);
+const _NON_RESTAURANT_NAME = /\b(animate|tsutaya|bookoff|don[\s-]?quijote|donki|loft\s+main|daiso|yodobashi|bic\s+camera|yamada\s+denki|tower\s+records|matsumoto\s+kiyoshi|sundrug|apple\s+store|uniqlo\s+(flagship|main)|muji\s+(flagship|main)|ikea)\b/i;
+
+function isLikelyRestaurant(place) {
+  const types = place.types || [];
+  if (_NON_RESTAURANT_NAME.test(place.name || '')) return false;
+  // Must have at least one restaurant-y type
+  const hasFoodType = types.some(t => _RESTAURANT_TYPES.has(t));
+  if (!hasFoodType) return false;
+  // If it ALSO has a non-food primary type (lodging, hostel, mall), reject —
+  // these are usually hotels/malls with a token "restaurant" tag from a tenant.
+  const hasNonFood = types.some(t => _NON_RESTAURANT_TYPES.has(t));
+  if (hasNonFood) return false;
+  return true;
+}
 const ANTHROPIC_KEY = env.ANTHROPIC_API_KEY;
 const SUPABASE_URL = env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY = env.SUPABASE_SERVICE_KEY;
@@ -280,6 +311,11 @@ async function phase1_discover(city) {
       const data = await res.json();
 
       for (const place of (data.results || [])) {
+        // Ingestion guard (P0-4): skip non-restaurants. Google Places sometimes
+        // returns hostels, malls, bookstores, etc. when keyword search hits a
+        // chain name. Reject if any clearly non-food primary type is present
+        // AND no restaurant/cafe/food type.
+        if (!isLikelyRestaurant(place)) continue;
         if (!allPlaces.has(place.place_id)) {
           allPlaces.set(place.place_id, {
             google_place_id: place.place_id,
@@ -301,6 +337,7 @@ async function phase1_discover(city) {
         const res2 = await fetch(url2);
         const data2 = await res2.json();
         for (const place of (data2.results || [])) {
+          if (!isLikelyRestaurant(place)) continue;
           if (!allPlaces.has(place.place_id) && (place.price_level == null || place.price_level <= 2)) {
             allPlaces.set(place.place_id, {
               google_place_id: place.place_id,

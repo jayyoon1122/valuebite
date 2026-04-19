@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import type { RestaurantListItem } from '@valuebite/types';
-import { formatPrice, formatDistance } from '@valuebite/utils';
-import { Star, MapPin, ThumbsUp } from 'lucide-react';
+import { formatPrice } from '@valuebite/utils';
+import { Star, MapPin, ThumbsUp, Clock } from 'lucide-react';
+import { pickName as pickNameFmt, travelTime, freshnessLabel, getOpenStatus } from '@/lib/format';
+import { useAppStore } from '@/lib/store';
 
 // Map cuisine types to emoji thumbnails for visual scanning
 const CUISINE_EMOJI: Record<string, string> = {
@@ -56,7 +58,12 @@ function ValueBadge({ score }: { score?: number }) {
   );
 }
 
-function FreshnessBadge({ indicator }: { indicator: RestaurantListItem['freshnessIndicator'] }) {
+function FreshnessBadge({ indicator, lastVerifiedAt }: { indicator: RestaurantListItem['freshnessIndicator']; lastVerifiedAt?: string | null }) {
+  // Prefer the precise "X days ago" if we have a real timestamp; fallback to the
+  // generic "Recently Verified" label only when no date is available.
+  const precise = freshnessLabel(lastVerifiedAt);
+  if (precise) return <span className={`text-xs ${precise.color}`}>{precise.text}</span>;
+  if (!indicator) return null;
   const colorMap = {
     green: 'text-green-600',
     yellow: 'text-yellow-600',
@@ -78,28 +85,10 @@ const CURRENCY_TO_COUNTRY: Record<string, string> = {
   KWD: 'KW', INR: 'IN', MXN: 'MX', NZD: 'NZ',
 };
 
-// Returns true if string is "purely" non-Latin (Korean/Japanese/Chinese only,
-// no a-z chars). Mixed strings like "Bistro 路地裏" return false.
-function isNonLatin(s?: string): boolean {
-  if (!s) return false;
-  // Has any Latin letter? Then it's mixed/Latin — accept it.
-  if (/[a-zA-Z]/.test(s)) return false;
-  // Pure Korean Hangul, Japanese Hiragana/Katakana, or CJK
-  return /[\uAC00-\uD7AF\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/.test(s);
-}
-
-function pickName(name: any): string {
-  if (!name) return '';
-  // Prefer English name UNLESS it's purely non-Latin (bad data: Korean text in en field)
-  if (name.en && !isNonLatin(name.en)) return name.en;
-  // Fall back to romanized (Latin transliteration)
-  if (name.romanized && !isNonLatin(name.romanized)) return name.romanized;
-  // Then English even if non-Latin (better than blank)
-  return name.en || name.original || name.romanized || '';
-}
-
 export function RestaurantCard({ restaurant, countryCode = 'JP' }: Props) {
-  const name = pickName(restaurant.name);
+  const { locale } = useAppStore();
+  const name = pickNameFmt(restaurant.name, locale);
+  const open = getOpenStatus((restaurant as any).operatingHours, (restaurant as any).is24h);
   // Always use the restaurant's own currency for price display
   const priceCountry = restaurant.priceCurrency
     ? CURRENCY_TO_COUNTRY[restaurant.priceCurrency] || countryCode
@@ -143,20 +132,31 @@ export function RestaurantCard({ restaurant, countryCode = 'JP' }: Props) {
         <ValueBadge score={restaurant.valueScore} />
       </div>
 
-      <div className="flex items-center gap-4 text-sm text-[var(--vb-text-secondary)] mt-2">
+      <div className="flex items-center gap-4 text-sm text-[var(--vb-text-secondary)] mt-2 flex-wrap">
         {price && (
           <span className="font-semibold text-[var(--vb-text)]">{price}<span className="text-xs font-normal">/person</span></span>
         )}
-        {restaurant.distance != null && (
-          <span className="flex items-center gap-1">
-            <MapPin size={14} />
-            {formatDistance(restaurant.distance)}
-          </span>
-        )}
+        {restaurant.distance != null && (() => {
+          // distance is in meters; convert to km for travelTime
+          const km = restaurant.distance / 1000;
+          const tt = travelTime(km);
+          return (
+            <span className="flex items-center gap-1">
+              <MapPin size={14} />
+              {tt || (km < 1 ? `${Math.round(km * 1000)}m` : `${km.toFixed(1)}km`)}
+            </span>
+          );
+        })()}
         {restaurant.totalReviews > 0 && (
           <span className="flex items-center gap-1">
             <ThumbsUp size={14} />
             {restaurant.totalReviews}
+          </span>
+        )}
+        {open.state !== 'unknown' && (
+          <span className={`flex items-center gap-1 font-medium ${open.color}`}>
+            <Clock size={13} />
+            {open.state === 'open' ? 'Open now' : open.state === 'closing_soon' ? 'Closing soon' : 'Closed'}
           </span>
         )}
       </div>
@@ -174,7 +174,7 @@ export function RestaurantCard({ restaurant, countryCode = 'JP' }: Props) {
             </span>
           )}
         </div>
-        <FreshnessBadge indicator={restaurant.freshnessIndicator} />
+        <FreshnessBadge indicator={restaurant.freshnessIndicator} lastVerifiedAt={(restaurant as any).lastVerified} />
       </div>
     </Link>
   );

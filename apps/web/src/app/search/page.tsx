@@ -6,7 +6,8 @@ import { BottomNav } from '@/components/BottomNav';
 import { SearchBar } from '@/components/SearchBar';
 import { RestaurantCard } from '@/components/RestaurantCard';
 import { useAppStore } from '@/lib/store';
-import { SlidersHorizontal, X } from 'lucide-react';
+import { SlidersHorizontal, X, Clock } from 'lucide-react';
+import { getOpenStatus } from '@/lib/format';
 
 const CUISINE_FILTERS = [
   'Japanese', 'Ramen', 'Sushi', 'Chinese', 'Korean', 'Thai',
@@ -26,8 +27,8 @@ const SORT_OPTIONS = [
   { label: 'Rating', key: 'rating' },
 ];
 
-function SearchResults({ liveQuery, cuisineFilter, priceMax, sortBy }: {
-  liveQuery: string; cuisineFilter: string | null; priceMax: number; sortBy: string;
+function SearchResults({ liveQuery, cuisineFilter, priceMax, sortBy, openNowOnly }: {
+  liveQuery: string; cuisineFilter: string | null; priceMax: number; sortBy: string; openNowOnly: boolean;
 }) {
   const searchParams = useSearchParams();
   const q = liveQuery || searchParams.get('q') || '';
@@ -72,6 +73,14 @@ function SearchResults({ liveQuery, cuisineFilter, priceMax, sortBy }: {
       filtered = filtered.filter((r: any) => !r.avgMealPrice || r.avgMealPrice <= priceMax);
     }
 
+    // Open Now filter
+    if (openNowOnly) {
+      filtered = filtered.filter((r: any) => {
+        const s = getOpenStatus(r.operatingHours, r.is24h);
+        return s.state === 'open' || s.state === 'closing_soon';
+      });
+    }
+
     // Sort
     if (sortBy === 'value') filtered.sort((a, b) => (b.valueScore || 0) - (a.valueScore || 0));
     else if (sortBy === 'distance') filtered.sort((a, b) => (a.distance || 0) - (b.distance || 0));
@@ -79,7 +88,7 @@ function SearchResults({ liveQuery, cuisineFilter, priceMax, sortBy }: {
     else if (sortBy === 'rating') filtered.sort((a, b) => (b.tasteScore || 0) - (a.tasteScore || 0));
 
     return filtered;
-  }, [allRestaurants, q, cuisineFilter, priceMax, sortBy]);
+  }, [allRestaurants, q, cuisineFilter, priceMax, sortBy, openNowOnly]);
 
   return (
     <>
@@ -102,20 +111,23 @@ function SearchResults({ liveQuery, cuisineFilter, priceMax, sortBy }: {
   );
 }
 
-export default function SearchPage() {
-  const [liveQuery, setLiveQuery] = useState('');
+function SearchPageInner() {
+  const searchParams = useSearchParams();
+  const initialQ = searchParams.get('q') || '';
+  const [liveQuery, setLiveQuery] = useState(initialQ);
   const [cuisineFilter, setCuisineFilter] = useState<string | null>(null);
   const [priceMax, setPriceMax] = useState(Infinity);
   const [sortBy, setSortBy] = useState('value');
+  const [openNowOnly, setOpenNowOnly] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const hasActiveFilters = cuisineFilter || priceMax < Infinity || sortBy !== 'value';
+  const hasActiveFilters = cuisineFilter || priceMax < Infinity || sortBy !== 'value' || openNowOnly;
 
   return (
     <div className="min-h-screen pb-20">
       <header className="sticky top-0 z-40 bg-[var(--vb-bg)] border-b border-[var(--vb-border)]">
         <div className="px-4 py-3 flex gap-2">
           <div className="flex-1">
-            <SearchBar onQueryChange={setLiveQuery} />
+            <SearchBar onQueryChange={setLiveQuery} initialValue={initialQ} />
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
@@ -192,10 +204,25 @@ export default function SearchPage() {
               </div>
             </div>
 
+            {/* Open Now chip */}
+            <div>
+              <p className="text-xs font-semibold text-[var(--vb-text-secondary)] mb-1.5">Availability</p>
+              <button
+                onClick={() => setOpenNowOnly(!openNowOnly)}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition ${
+                  openNowOnly
+                    ? 'bg-green-500 text-white'
+                    : 'bg-[var(--vb-bg-secondary)] text-[var(--vb-text-secondary)] hover:bg-gray-200 dark:hover:bg-gray-700'
+                }`}
+              >
+                <Clock size={12} /> Open now
+              </button>
+            </div>
+
             {/* Clear filters */}
             {hasActiveFilters && (
               <button
-                onClick={() => { setCuisineFilter(null); setPriceMax(Infinity); setSortBy('value'); }}
+                onClick={() => { setCuisineFilter(null); setPriceMax(Infinity); setSortBy('value'); setOpenNowOnly(false); }}
                 className="flex items-center gap-1 text-xs text-red-500 hover:text-red-600 transition"
               >
                 <X size={14} /> Clear all filters
@@ -205,9 +232,18 @@ export default function SearchPage() {
         )}
       </header>
       <Suspense fallback={<p className="text-center py-8">Loading...</p>}>
-        <SearchResults liveQuery={liveQuery} cuisineFilter={cuisineFilter} priceMax={priceMax} sortBy={sortBy} />
+        <SearchResults liveQuery={liveQuery} cuisineFilter={cuisineFilter} priceMax={priceMax} sortBy={sortBy} openNowOnly={openNowOnly} />
       </Suspense>
       <BottomNav />
     </div>
+  );
+}
+
+export default function SearchPage() {
+  // Wrap inner in Suspense because useSearchParams requires it in Next.js.
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><p>Loading…</p></div>}>
+      <SearchPageInner />
+    </Suspense>
   );
 }

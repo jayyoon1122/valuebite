@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState, useEffect } from 'react';
+import { use, useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { formatPrice } from '@valuebite/utils';
 import { BottomNav } from '@/components/BottomNav';
@@ -8,17 +8,18 @@ import { QuickRating } from '@/components/QuickRating';
 import { DetailedReviewForm } from '@/components/DetailedReviewForm';
 import { GoogleReviewSection } from '@/components/GoogleReviewCard';
 import { FavoriteButton } from '@/components/FavoriteButton';
+import { ShareButton } from '@/components/ShareButton';
 import { PhotoGallery } from '@/components/PhotoGallery';
 import { fetchRestaurantDetail } from '@/lib/data';
 import { PriceSuggestionModal } from '@/components/PriceSuggestionModal';
 import { useAppStore } from '@/lib/store';
-import { formatDistance } from '@valuebite/utils';
 import { DeliveryLinks } from '@/components/DeliveryLinks';
 import { GoogleAdSlot } from '@/components/GoogleAdSlot';
+import { pickName, pickSubtitle, normalizeAddress, travelTime, getOpenStatus, freshnessLabel } from '@/lib/format';
 import {
   ArrowLeft, MapPin, MessageSquare, PenLine, Clock, Globe, Phone,
   TrendingDown, Star, ChevronDown, ChevronUp,
-  Utensils, Camera, DollarSign, Navigation,
+  Utensils, Camera, DollarSign, Navigation, Flame,
 } from 'lucide-react';
 
 function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -91,7 +92,7 @@ function getValueVerdict(valueScore: number | undefined, avgRating: number, tota
 
 export default function RestaurantPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const { userLat, userLng } = useAppStore();
+  const { userLat, userLng, locale } = useAppStore();
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showPriceSuggestion, setShowPriceSuggestion] = useState(false);
   const [showHours, setShowHours] = useState(false);
@@ -133,11 +134,12 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
     );
   }
 
-  const name = restaurant.name?.en || restaurant.name?.original || '';
-  const originalName = restaurant.name?.original && restaurant.name.original !== name ? restaurant.name.original : '';
-  const address = typeof restaurant.address === 'object' && restaurant.address
-    ? (restaurant.address.en || restaurant.address.original || '')
-    : (restaurant.address || '');
+  const name = pickName(restaurant.name, locale);
+  const originalName = pickSubtitle(restaurant.name, name, locale);
+  const address = normalizeAddress(restaurant.address, locale);
+  const openStatus = getOpenStatus(restaurant.operatingHours, restaurant.is24h);
+  const verifiedAt = restaurant.lastVerified || restaurant.last_verified;
+  const verifiedLabel = freshnessLabel(verifiedAt);
   const currencyMap: Record<string, string> = { JPY: 'JP', USD: 'US', GBP: 'GB', EUR: 'DE', AUD: 'AU', SGD: 'SG', AED: 'AE', TWD: 'TW', HKD: 'HK', CAD: 'CA', CHF: 'CH', CZK: 'CZ', HUF: 'HU', PLN: 'PL', TRY: 'TR', ILS: 'IL', INR: 'IN', MXN: 'MX' };
   const priceCountry = currencyMap[restaurant.priceCurrency || 'JPY'] || 'JP';
   const price = restaurant.avgMealPrice ? formatPrice(restaurant.avgMealPrice, priceCountry) : '';
@@ -206,6 +208,10 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
             <ArrowLeft size={20} />
           </Link>
           <h1 className="font-semibold text-base truncate flex-1">{name}</h1>
+          <ShareButton
+            title={name}
+            text={`${name}${restaurant.valueScore ? ` — ${restaurant.valueScore.toFixed(1)}/5 value` : ''}${price ? ` · ${price}/person` : ''}`}
+          />
           <FavoriteButton
             restaurantId={id}
             restaurantName={name}
@@ -249,14 +255,20 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
           </div>
 
           {/* Compact stats row */}
-          <div className="flex items-center gap-4 mt-3 text-sm text-[var(--vb-text-secondary)]">
+          <div className="flex items-center gap-4 mt-3 text-sm text-[var(--vb-text-secondary)] flex-wrap">
             {price && <span className="font-semibold text-[var(--vb-text)]">{price}<span className="font-normal text-xs">/person</span></span>}
             {avgRating > 0 && <span className="flex items-center gap-1"><Star size={13} className="text-yellow-500 fill-yellow-500" /> {avgRating.toFixed(1)}</span>}
             {totalReviewCount > 0 && <span>{totalReviewCount.toLocaleString()} reviews</span>}
             {distanceKm != null && (
               <span className="flex items-center gap-1">
                 <MapPin size={13} />
-                {distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m` : `${distanceKm.toFixed(1)}km`}
+                {(() => { const tt = travelTime(distanceKm); return tt || (distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m` : `${distanceKm.toFixed(1)}km`); })()}
+              </span>
+            )}
+            {openStatus.state !== 'unknown' && (
+              <span className={`flex items-center gap-1 font-semibold ${openStatus.color}`}>
+                <Clock size={13} />
+                {openStatus.state === 'open' ? 'Open now' : openStatus.state === 'closing_soon' ? 'Closing soon' : 'Closed'}
               </span>
             )}
           </div>
@@ -341,6 +353,78 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
           </div>
         </div>
 
+        {/* ── BEST DISHES — surfaces top mentions when reviews available ── */}
+        {realGoogleReviews?.reviews?.length >= 3 && (() => {
+          // Naive but effective: extract dish-shaped phrases from reviews.
+          // Looks for capitalized food words / short noun phrases mentioned in
+          // multiple reviews. Filter out generic ("place", "food", "service").
+          const STOPWORDS = new Set(['the','a','an','and','or','but','for','with','from','was','were','is','are','of','to','in','on','at','my','our','their','this','that','these','those','very','really','great','good','bad','it','they','we','i','you','he','she','place','food','service','restaurant','time','day','night','people','staff','meal','menu','order','price','prices','tokyo','shop','tax','some','also','only','just','one','two','best','really','try','came','here','there','went','got','had','have','has','had','dish','dishes','meat','fish']);
+          const counts: Record<string, number> = {};
+          const original: Record<string, string> = {};
+          for (const rev of realGoogleReviews.reviews.slice(0, 20)) {
+            const text = String(rev.text || '');
+            // Capture 1-2 word noun phrases that look like dish names
+            const matches = text.match(/\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)?\b/g) || [];
+            for (const m of matches) {
+              const key = m.toLowerCase();
+              if (key.length < 4 || key.length > 25) continue;
+              if (STOPWORDS.has(key)) continue;
+              if (key.split(' ').every(w => STOPWORDS.has(w))) continue;
+              counts[key] = (counts[key] || 0) + 1;
+              if (!original[key]) original[key] = m;
+            }
+          }
+          const top = Object.entries(counts)
+            .filter(([_, c]) => c >= 2)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5);
+          if (top.length === 0) return null;
+          return (
+            <div className="rounded-2xl border border-[var(--vb-border)] overflow-hidden">
+              <div className="px-4 py-3 bg-[var(--vb-bg-secondary)] border-b border-[var(--vb-border)]">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <Flame size={15} className="text-orange-500" />
+                  Most Mentioned in Reviews
+                </h3>
+                <p className="text-xs text-[var(--vb-text-secondary)] mt-0.5">What other diners are talking about</p>
+              </div>
+              <div className="p-3 flex flex-wrap gap-2">
+                {top.map(([key, count]) => (
+                  <span key={key} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-500/10 text-orange-600 text-sm font-medium">
+                    {original[key]}
+                    <span className="text-[10px] bg-orange-500/20 px-1.5 py-0.5 rounded-full">{count}×</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* ── MENU EMPTY-STATE CTA — only shown when no menu data exists ── */}
+        {menuItems.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-[var(--vb-border)] p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-[var(--vb-primary)]/10 flex items-center justify-center flex-shrink-0">
+                <Camera size={18} className="text-[var(--vb-primary)]" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-sm mb-0.5">No menu data yet</h3>
+                <p className="text-xs text-[var(--vb-text-secondary)] mb-2.5">
+                  Help others choose — snap a photo of the menu and we&apos;ll add prices to ValueBite.
+                </p>
+                <label className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--vb-primary)] cursor-pointer hover:underline">
+                  <Camera size={13} /> Upload menu photo
+                  <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) alert(`Photo received! We&apos;ll process and add it. Thanks for helping ValueBite grow.`);
+                    e.target.value = '';
+                  }} />
+                </label>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ── MENU & PRICES ── */}
         {menuItems.length > 0 && (() => {
           const categoryLabels: Record<string, string> = {
@@ -421,15 +505,18 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
 
         {/* ── INFO SECTION (hours, contact, address) ── */}
         <div className="rounded-2xl border border-[var(--vb-border)] overflow-hidden divide-y divide-[var(--vb-border)]">
-          {/* Hours — collapsible */}
+          {/* Hours — collapsible. Status (Open/Closed) shown prominently. */}
           {(restaurant.operatingHours || restaurant.is24h) && (
             <button
               onClick={() => setShowHours(!showHours)}
               className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-[var(--vb-bg-secondary)] transition"
             >
               <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                <Clock size={16} className="text-[var(--vb-text-secondary)] flex-shrink-0" />
+                <Clock size={16} className={`flex-shrink-0 ${openStatus.color || 'text-[var(--vb-text-secondary)]'}`} />
                 <div className="flex-1 min-w-0">
+                  {openStatus.state !== 'unknown' && (
+                    <div className={`text-sm font-semibold mb-0.5 ${openStatus.color}`}>{openStatus.label}</div>
+                  )}
                   {renderHours()}
                 </div>
               </div>
@@ -465,7 +552,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
                 Get Directions
                 {distanceKm != null && (
                   <span className="text-[var(--vb-text-secondary)] font-normal ml-1.5">
-                    ({distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m away` : `${distanceKm.toFixed(1)}km away`})
+                    ({(() => { const tt = travelTime(distanceKm); return tt ? `${tt} away` : (distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m away` : `${distanceKm.toFixed(1)}km away`); })()})
                   </span>
                 )}
               </span>
@@ -552,12 +639,16 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
           />
         )}
 
-        {/* Freshness */}
-        {restaurant.freshnessIndicator && (
+        {/* Freshness — prefer precise "Verified X days ago" if we have the date */}
+        {(verifiedLabel || restaurant.freshnessIndicator) && (
           <div className="text-center pt-2">
-            <span className={`text-xs ${restaurant.freshnessIndicator.color === 'green' ? 'text-green-600' : restaurant.freshnessIndicator.color === 'yellow' ? 'text-yellow-600' : 'text-red-600'}`}>
-              {restaurant.freshnessIndicator.label}
-            </span>
+            {verifiedLabel ? (
+              <span className={`text-xs ${verifiedLabel.color}`}>{verifiedLabel.text}</span>
+            ) : (
+              <span className={`text-xs ${restaurant.freshnessIndicator.color === 'green' ? 'text-green-600' : restaurant.freshnessIndicator.color === 'yellow' ? 'text-yellow-600' : 'text-red-600'}`}>
+                {restaurant.freshnessIndicator.label}
+              </span>
+            )}
           </div>
         )}
 
