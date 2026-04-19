@@ -130,6 +130,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           reviews: formattedReviews,
         },
       },
+    }, {
+      // Edge cache by restaurant id. Same id served from edge for 5 min.
+      // Detail rarely changes (menu/photos updated infrequently).
+      headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600' },
     });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
@@ -74,13 +74,35 @@ export default function HomePage() {
     }
   }, [geoAsked, setUserLocation, setCountryCode, setCityId]);
 
-  // Fetch from Supabase whenever location OR selected purpose changes.
-  // The API sorts by purpose_score when purpose is provided, so changing
-  // the chip re-fetches with proper ranking.
+  // Per-purpose cache. Switching chips becomes instant for cached purposes;
+  // a stale entry is shown immediately while a background refetch updates it.
+  // Keyed by `${lat},${lng},${purpose}` so location changes invalidate cleanly.
+  const cacheRef = useRef<Map<string, { data: any[]; ts: number }>>(new Map());
+  const STALE_MS = 5 * 60 * 1000; // 5 min
+
   useEffect(() => {
+    const key = `${userLat.toFixed(3)},${userLng.toFixed(3)},${selectedPurpose || ''}`;
+    const cached = cacheRef.current.get(key);
+    if (cached) {
+      // Show cached instantly — no spinner
+      setRestaurants(cached.data);
+      setLoading(false);
+      // If stale, refresh in background (no spinner)
+      if (Date.now() - cached.ts > STALE_MS) {
+        fetchNearbyRestaurants(userLat, userLng, 15, selectedPurpose)
+          .then(data => { cacheRef.current.set(key, { data, ts: Date.now() }); setRestaurants(data); })
+          .catch(() => {});
+      }
+      return;
+    }
+    // No cache — show spinner
     setLoading(true);
     fetchNearbyRestaurants(userLat, userLng, 15, selectedPurpose)
-      .then(data => { setRestaurants(data); setLoading(false); })
+      .then(data => {
+        cacheRef.current.set(key, { data, ts: Date.now() });
+        setRestaurants(data);
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
   }, [userLat, userLng, selectedPurpose]);
 

@@ -109,6 +109,21 @@ function mergeFields(existing, input) {
   return update;
 }
 
+// Validate that name.en field actually contains Latin characters.
+// Bad data we've seen: import scripts copying name.original into name.en
+// when the original is Korean/Chinese/Japanese only. Fix at the SOURCE.
+function validateName(name) {
+  if (!name || typeof name !== 'object') return name;
+  const cleaned = { ...name };
+  // If en field is purely non-Latin (no a-z), it's bad data — drop it so the
+  // UI fallback (romanized → original) takes over instead of showing garbage in EN mode.
+  if (cleaned.en && !/[a-zA-Z]/.test(cleaned.en) && /[\uAC00-\uD7AF\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/.test(cleaned.en)) {
+    console.warn(`upsertRestaurant: name.en="${cleaned.en}" has no Latin chars; dropping (bad import data)`);
+    delete cleaned.en;
+  }
+  return cleaned;
+}
+
 /**
  * Main upsert function.
  * @returns {{ id: string, action: 'created' | 'updated' | 'unchanged' }}
@@ -123,6 +138,9 @@ export async function upsertRestaurant(SUPABASE_URL, SUPABASE_KEY, input) {
   if (!input.name || input.lat == null || input.lng == null) {
     throw new Error('upsertRestaurant: name, lat, lng are required');
   }
+  // Validate name.en is actually Latin (root-cause prevention for the
+  // 2026-04-19 "Korean text in English UI" bug).
+  input = { ...input, name: validateName(input.name) };
 
   const existing = await findExisting(SUPABASE_URL, headers, input);
 

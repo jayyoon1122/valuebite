@@ -15,7 +15,10 @@ export async function GET(request: NextRequest) {
   const { data, error } = await supaFetch<any[]>(query);
   if (error) return NextResponse.json({ success: false, error }, { status: 500 });
 
-  return NextResponse.json({ success: true, data: data || [] });
+  return NextResponse.json(
+    { success: true, data: data || [] },
+    { headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=300' } }
+  );
 }
 
 // POST — create a community post
