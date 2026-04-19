@@ -31,7 +31,8 @@ const CUISINE_FIT = {
   },
   group_party: {
     boost: ['korean', 'bbq', 'barbecue', 'chinese', 'hot_pot', 'izakaya', 'tapas', 'sharing', 'buffet', 'mexican', 'indian', 'thai', 'yakitori', 'pub', 'beer_hall', 'sports_bar'],
-    penalty: ['fine_dining', 'omakase', 'kaiseki', 'cafe', 'bakery', 'fast_food'],
+    // fast food = bad for groups (small tables, no shareable plates). burger/donut chains = same.
+    penalty: ['fine_dining', 'omakase', 'kaiseki', 'cafe', 'bakery', 'fast_food', 'burger', 'donut', 'meal_takeaway', 'meal_delivery', 'sandwich'],
   },
   solo_dining: {
     boost: ['ramen', 'noodle', 'curry', 'rice', 'onigiri', 'sandwich', 'pho', 'udon', 'soba', 'gyudon', 'donburi', 'fast_food', 'diner', 'cafe', 'bakery', 'sushi', 'tonkatsu', 'standing_bar'],
@@ -42,8 +43,9 @@ const CUISINE_FIT = {
     penalty: ['cafe', 'bakery', 'breakfast', 'brunch', 'bistro', 'fine_dining'],
   },
   healthy_budget: {
-    boost: ['salad', 'poke', 'vegan', 'vegetarian', 'mediterranean', 'sushi', 'thai', 'vietnamese', 'smoothie', 'acai', 'organic', 'health_food', 'juice', 'donburi', 'soba'],
-    penalty: ['fast_food', 'fried_chicken', 'burger', 'pizza', 'bbq', 'donut', 'dessert', 'fried'],
+    boost: ['salad', 'poke', 'vegan', 'vegetarian', 'mediterranean', 'sushi', 'thai', 'vietnamese', 'smoothie', 'acai', 'organic', 'health_food', 'juice', 'donburi', 'soba', 'fish'],
+    // abura_soba/abura = oil-soaked noodles (NOT healthy despite the word "soba")
+    penalty: ['fast_food', 'fried_chicken', 'burger', 'pizza', 'bbq', 'donut', 'dessert', 'fried', 'abura_soba', 'abura', 'tonkatsu', 'tempura', 'gyukatsu', 'ramen'],
   },
   daily_eats: {
     boost: ['ramen', 'curry', 'rice', 'noodle', 'sandwich', 'diner', 'cafe', 'fast_food', 'street_food', 'onigiri', 'gyudon', 'udon', 'soba', 'donburi', 'family_restaurant', 'tonkatsu', 'meal_takeaway'],
@@ -90,16 +92,44 @@ function priceTierScore(price, currency, purpose) {
   return 0.0;
 }
 
+// Non-food/wrong tags that Google Places sometimes returns for restaurants.
+// Penalize these globally — they indicate bad data or non-restaurant venues.
+const NON_FOOD_TAGS = new Set([
+  'spa', 'beauty_salon', 'convenience_store', 'lodging', 'hotel',
+  'gas_station', 'parking', 'atm', 'real_estate_agency',
+  'point_of_interest', 'establishment', // these are too generic
+]);
+
+function tokenize(cuisineTypes) {
+  // Build a set of EXACT tokens from cuisine_type array.
+  // Each cuisine entry contributes both the full string AND its individual words.
+  // This avoids false positives like "soba" matching "abura_soba" via substring.
+  const tokens = new Set();
+  for (const ct of (cuisineTypes || [])) {
+    const norm = ct.toLowerCase().replace(/[\s-]+/g, '_').replace(/[^a-z0-9_]/g, '');
+    if (!norm) continue;
+    tokens.add(norm);
+    norm.split('_').forEach(w => { if (w.length >= 3) tokens.add(w); });
+  }
+  return tokens;
+}
+
 function cuisineScore(cuisineTypes, purpose) {
   const config = CUISINE_FIT[purpose];
   if (!config) return 0;
-  const types = (cuisineTypes || []).map(c => c.toLowerCase().replace(/[\s-]+/g, '_'));
+  const tokens = tokenize(cuisineTypes);
+
+  // Global penalty: if the restaurant is tagged as non-food (spa, hotel, etc.),
+  // strongly penalize ALL purpose scores. Bad source data shouldn't rank.
+  let nonFoodPenalty = 0;
+  for (const tag of tokens) if (NON_FOOD_TAGS.has(tag)) nonFoodPenalty -= 0.40;
+
   let score = 0;
-  for (const t of types) {
-    if (config.boost.some(b => t.includes(b) || b.includes(t))) score += 0.25;
-    if (config.penalty.some(p => t.includes(p) || p.includes(t))) score -= 0.20;
-  }
-  return Math.min(1, Math.max(-0.5, score));
+  // EXACT token match (no more substring matching that catches false positives)
+  for (const b of config.boost) if (tokens.has(b)) score += 0.25;
+  for (const p of config.penalty) if (tokens.has(p)) score -= 0.20;
+
+  return Math.min(1, Math.max(-0.5, score + nonFoodPenalty));
 }
 
 // ───── Final score formula ─────
