@@ -74,17 +74,25 @@ export default function HomePage() {
     }
   }, [geoAsked, setUserLocation, setCountryCode, setCityId]);
 
-  // Fetch from Supabase whenever location changes
+  // Fetch from Supabase whenever location OR selected purpose changes.
+  // The API sorts by purpose_score when purpose is provided, so changing
+  // the chip re-fetches with proper ranking.
   useEffect(() => {
     setLoading(true);
-    fetchNearbyRestaurants(userLat, userLng, 15)
+    fetchNearbyRestaurants(userLat, userLng, 15, selectedPurpose)
       .then(data => { setRestaurants(data); setLoading(false); })
       .catch(() => setLoading(false));
-  }, [userLat, userLng]);
+  }, [userLat, userLng, selectedPurpose]);
 
   // Apply filters
   let filtered = [...restaurants];
   if (!showChains) filtered = filtered.filter(r => !r.isChain);
+
+  // When a purpose chip is selected, only show restaurants that genuinely
+  // match that purpose (score >= 0.4). Otherwise the chip would be cosmetic.
+  if (selectedPurpose) {
+    filtered = filtered.filter(r => (r.purposeScores?.[selectedPurpose] || 0) >= 0.4);
+  }
 
   // Weave AdSense ad slots into the organic feed at positions 4, 10, 16.
   // GoogleAdSlot renders nothing until NEXT_PUBLIC_ADSENSE_CLIENT_ID is set,

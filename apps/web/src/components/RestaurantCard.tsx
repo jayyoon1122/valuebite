@@ -78,8 +78,28 @@ const CURRENCY_TO_COUNTRY: Record<string, string> = {
   KWD: 'KW', INR: 'IN', MXN: 'MX', NZD: 'NZ',
 };
 
+// Returns true if string is "purely" non-Latin (Korean/Japanese/Chinese only,
+// no a-z chars). Mixed strings like "Bistro 路地裏" return false.
+function isNonLatin(s?: string): boolean {
+  if (!s) return false;
+  // Has any Latin letter? Then it's mixed/Latin — accept it.
+  if (/[a-zA-Z]/.test(s)) return false;
+  // Pure Korean Hangul, Japanese Hiragana/Katakana, or CJK
+  return /[\uAC00-\uD7AF\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/.test(s);
+}
+
+function pickName(name: any): string {
+  if (!name) return '';
+  // Prefer English name UNLESS it's purely non-Latin (bad data: Korean text in en field)
+  if (name.en && !isNonLatin(name.en)) return name.en;
+  // Fall back to romanized (Latin transliteration)
+  if (name.romanized && !isNonLatin(name.romanized)) return name.romanized;
+  // Then English even if non-Latin (better than blank)
+  return name.en || name.original || name.romanized || '';
+}
+
 export function RestaurantCard({ restaurant, countryCode = 'JP' }: Props) {
-  const name = restaurant.name.en || restaurant.name.original || restaurant.name.romanized || '';
+  const name = pickName(restaurant.name);
   // Always use the restaurant's own currency for price display
   const priceCountry = restaurant.priceCurrency
     ? CURRENCY_TO_COUNTRY[restaurant.priceCurrency] || countryCode

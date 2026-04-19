@@ -8,8 +8,10 @@
 // Restaurant List (for home page, search, purpose)
 // ==================
 
-export async function fetchNearbyRestaurants(lat: number, lng: number, radius: number = 15): Promise<any[]> {
-  const res = await fetch(`/api/restaurants/nearby?lat=${lat}&lng=${lng}&radius=${radius}`);
+export async function fetchNearbyRestaurants(lat: number, lng: number, radius: number = 15, purpose?: string | null): Promise<any[]> {
+  const params = new URLSearchParams({ lat: String(lat), lng: String(lng), radius: String(radius) });
+  if (purpose) params.set('purpose', purpose);
+  const res = await fetch(`/api/restaurants/nearby?${params.toString()}`);
   const data = await res.json();
   return data.success ? data.data : [];
 }
