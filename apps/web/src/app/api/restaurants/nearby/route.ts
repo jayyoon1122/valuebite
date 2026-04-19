@@ -3,11 +3,18 @@ import { NextRequest, NextResponse } from 'next/server';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ffnxyafohnxgfxsklbaq.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || '';
 
+const VALID_PURPOSES = new Set([
+  'daily_eats', 'good_value', 'date_night', 'family_dinner',
+  'late_night', 'healthy_budget', 'group_party', 'solo_dining', 'special_occasion',
+]);
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const lat = parseFloat(searchParams.get('lat') || '35.6762');
   const lng = parseFloat(searchParams.get('lng') || '139.6503');
   const radiusKm = parseFloat(searchParams.get('radius') || '10');
+  const purposeRaw = searchParams.get('purpose') || '';
+  const purpose = purposeRaw.replace(/-/g, '_'); // accept both daily-eats and daily_eats
 
   const latRange = radiusKm / 111;
   const lngRange = radiusKm / (111 * Math.cos(lat * Math.PI / 180));
@@ -17,10 +24,19 @@ export async function GET(request: NextRequest) {
     'Authorization': `Bearer ${SUPABASE_KEY}`,
   };
 
+  // Build sort + filter clauses
+  // When purpose is specified, fetch ALL restaurants in area sorted by purpose_score
+  // (premium restaurants would otherwise be filtered out by the value_score sort).
+  // Without purpose, sort by value_score for the home/search experience.
+  const sortClause = (purpose && VALID_PURPOSES.has(purpose))
+    ? `order=purpose_scores->>${purpose}.desc.nullslast`
+    : 'order=value_score.desc.nullslast';
+  const overFetch = (purpose && VALID_PURPOSES.has(purpose)) ? 500 : 300;
+
   try {
     // Fetch restaurants in area (over-fetch to allow re-ranking)
     const restaurantsRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/restaurants?is_active=eq.true&lat=gte.${lat - latRange}&lat=lte.${lat + latRange}&lng=gte.${lng - lngRange}&lng=lte.${lng + lngRange}&select=id,name,slug,lat,lng,cuisine_type,avg_meal_price,price_currency,value_score,taste_score,portion_score,total_reviews,is_chain,phone,website,purpose_scores,place_attributes&order=value_score.desc.nullslast&limit=300`,
+      `${SUPABASE_URL}/rest/v1/restaurants?is_active=eq.true&lat=gte.${lat - latRange}&lat=lte.${lat + latRange}&lng=gte.${lng - lngRange}&lng=lte.${lng + lngRange}&select=id,name,slug,lat,lng,cuisine_type,avg_meal_price,price_currency,value_score,taste_score,portion_score,total_reviews,is_chain,phone,website,purpose_scores,place_attributes&${sortClause}&limit=${overFetch}`,
       { headers }
     );
 
@@ -73,9 +89,16 @@ export async function GET(request: NextRequest) {
         _hasPhoto: restaurantsWithPhotos.has(r.id),
       }))
       .sort((a, b) => {
-        // Primary sort: has photo (true first)
+        // When purpose is specified: sort by purpose score primarily, photos secondary.
+        // When no purpose: photos first, then value score.
+        if (purpose && VALID_PURPOSES.has(purpose)) {
+          const sa = a.purposeScores?.[purpose] || 0;
+          const sb = b.purposeScores?.[purpose] || 0;
+          if (sa !== sb) return sb - sa;
+          if (a._hasPhoto !== b._hasPhoto) return a._hasPhoto ? -1 : 1;
+          return (b.valueScore || 0) - (a.valueScore || 0);
+        }
         if (a._hasPhoto !== b._hasPhoto) return a._hasPhoto ? -1 : 1;
-        // Secondary sort: value score desc
         return (b.valueScore || 0) - (a.valueScore || 0);
       })
       .slice(0, 100)

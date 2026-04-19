@@ -21,28 +21,24 @@ export default function PurposeDetailPage({ params }: { params: Promise<{ purpos
   const brackets = getCityBrackets(cityId || 'tokyo', countryCode);
   const bracket = brackets.find((b) => b.purposeKey === purpose);
 
-  // Fetch from Supabase
+  // Fetch from Supabase — pass purpose to API so it sorts by purpose_score and
+  // includes premium restaurants (which would otherwise be cut by value_score sort).
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/restaurants/nearby?lat=${userLat}&lng=${userLng}&radius=15`)
+    fetch(`/api/restaurants/nearby?lat=${userLat}&lng=${userLng}&radius=15&purpose=${purpose}`)
       .then(r => r.json())
       .then(d => {
         if (d.success && d.data) setAllRestaurants(d.data);
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [userLat, userLng]);
+  }, [userLat, userLng, purpose]);
 
-  // Filter by price bracket (min AND max) + purpose score threshold
+  // Filter: must have purpose_score >= 0.4 (real fit, not just price match)
+  // The API already sorts by purpose_score, but we apply the threshold to drop poor matches.
   let filtered = allRestaurants.filter((r) => {
-    if (!bracket) return true;
-    const price = r.avgMealPrice || 0;
-    if (price <= 0) return false;
-    const min = bracket.minPrice || 0;
-    // Price must be in range, OR restaurant has a strong purpose score for this category
     const purposeScore = r.purposeScores?.[purpose] || 0;
-    const inPriceRange = price >= min && price <= bracket.maxPrice;
-    return inPriceRange || purposeScore >= 0.4;
+    return purposeScore >= 0.4;
   });
 
   if (EXCLUDE_CHAINS_FOR.has(purpose)) {
@@ -52,7 +48,8 @@ export default function PurposeDetailPage({ params }: { params: Promise<{ purpos
     filtered = filtered.filter((r) => !r.isChain);
   }
 
-  // Sort by purpose score (primary), then value score (secondary)
+  // Already sorted by purpose_score from API, but re-sort here in case
+  // additional client-side filters removed the top entries.
   filtered.sort((a, b) => {
     const scoreA = a.purposeScores?.[purpose] || 0;
     const scoreB = b.purposeScores?.[purpose] || 0;
